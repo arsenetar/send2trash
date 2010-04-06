@@ -9,7 +9,7 @@
    rather than sending it to trash. 
  */
 
-static PyObject* trash_win_send(PyObject *self, PyObject *args)
+static PyObject* send2trash_win_send(PyObject *self, PyObject *args)
 {
     SHFILEOPSTRUCTW op;
     PyObject *filepath;
@@ -47,14 +47,14 @@ static PyObject* trash_win_send(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef TrashMethods[] = {
-    {"send",  trash_win_send, METH_VARARGS, ""},
+    {"send",  send2trash_win_send, METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
 PyMODINIT_FUNC
-init_trash_win(void)
+init_send2trash_win(void)
 {
-    PyObject *m = Py_InitModule("_trash_win", TrashMethods);
+    PyObject *m = Py_InitModule("_send2trash_win", TrashMethods);
     if (m == NULL) {
         return;
     }

@@ -1,21 +1,21 @@
 import sys
 import os.path as op
 
-from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 
 exts = []
 
 if sys.platform == 'darwin':
     exts.append(Extension(
-        '_trash_osx',
-        [op.join('modules', 'trash_osx.c')],
+        '_send2trash_osx',
+        [op.join('modules', 'send2trash_osx.c')],
         extra_link_args=['-framework', 'CoreServices'],
     ))
 if sys.platform == 'win32':
     exts.append(Extension(
-        '_trash_win',
-        [op.join('modules', 'trash_win.c')],
+        '_send2trash_win',
+        [op.join('modules', 'send2trash_win.c')],
         extra_link_args = ['shell32.lib'],
     ))
 

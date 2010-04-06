@@ -2,7 +2,7 @@
 #include "Python.h"
 #include <CoreServices/CoreServices.h>
 
-static PyObject* trash_osx_send(PyObject *self, PyObject *args)
+static PyObject* send2trash_osx_send(PyObject *self, PyObject *args)
 {
     UInt8 *utf8_chars;
     FSRef fp;
@@ -22,13 +22,13 @@ static PyObject* trash_osx_send(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef TrashMethods[] = {
-    {"send",  trash_osx_send, METH_VARARGS, ""},
+    {"send",  send2trash_osx_send, METH_VARARGS, ""},
 };
 
 PyMODINIT_FUNC
-init_trash_osx(void)
+init_send2trash_osx(void)
 {
-    PyObject *m = Py_InitModule("_trash_osx", TrashMethods);
+    PyObject *m = Py_InitModule("_send2trash_osx", TrashMethods);
     if (m == NULL) {
         return;
     }
