@@ -2,8 +2,21 @@ from __future__ import unicode_literals
 import sys
 import os
 import os.path as op
+import logging
 
-TRASH_PATH = op.expanduser('~/.Trash')
+CANDIDATES = [
+    '~/.local/share/Trash/files',
+    '~/.Trash',
+]
+
+for candidate in CANDIDATES:
+    candidate_path = op.expanduser(candidate)
+    if op.exists(candidate_path):
+        TRASH_PATH = candidate_path
+        break
+else:
+    logging.warning("Can't find path for Trash")
+    TRASH_PATH = op.expanduser('~/.Trash')
 
 # XXX Make this work on external volumes
 
