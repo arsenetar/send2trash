@@ -5,4 +5,4 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     from plat_win import send2trash
 else:
-    print "Unsupported platform"
+    from plat_other import send2trash
