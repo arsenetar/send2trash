@@ -5,7 +5,7 @@
 #include "windows.h"
 #include "shlobj.h"
 
-/* WARNING: If the filepath is not fully qualify, Windows deletes the file
+/* WARNING: If the filepath is not fully qualified, Windows deletes the file
    rather than sending it to trash. 
  */
 
@@ -13,7 +13,7 @@ static PyObject* trash_win_send(PyObject *self, PyObject *args)
 {
     SHFILEOPSTRUCTW op;
     PyObject *filepath;
-    Py_ssize_t len, cpysize;
+    Py_ssize_t len;
     WCHAR filechars[MAX_PATH+1];
     int r;
     
@@ -27,9 +27,7 @@ static PyObject* trash_win_send(PyObject *self, PyObject *args)
     }
     
     len = PyUnicode_GET_SIZE(filepath);
-    /* +2 because we are going to add two null chars at the end */
-    cpysize = sizeof(WCHAR) * (len + 2);
-    memcpy(filechars, PyUnicode_AsUnicode(filepath), cpysize);
+    memcpy(filechars, PyUnicode_AsUnicode(filepath), sizeof(WCHAR)*len);
     filechars[len] = '\0';
     filechars[len+1] = '\0';
 
@@ -39,6 +37,12 @@ static PyObject* trash_win_send(PyObject *self, PyObject *args)
     op.pTo = NULL;
     op.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
     r = SHFileOperationW(&op);
+    
+    if (r != 0) {
+        PyErr_Format(PyExc_OSError, "Couldn't perform operation. Error code: %d", r);
+        return NULL;
+    }
+    
     return Py_None;
 }
 
