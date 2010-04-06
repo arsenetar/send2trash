@@ -15,7 +15,7 @@ static PyObject* trash_osx_send(PyObject *self, PyObject *args)
 	FSPathMakeRefWithOptions(utf8_chars, kFSPathMakeRefDoNotFollowLeafSymlink, &fp, NULL);
 	op_result = FSMoveObjectToTrashSync(&fp, NULL, kFSFileOperationDefaultOptions);
 	if (op_result != noErr) {
-        PyErr_SetString(PyExc_IOError, GetMacOSStatusCommentString(op_result));
+        PyErr_SetString(PyExc_OSError, GetMacOSStatusCommentString(op_result));
         return NULL;
     }
     return Py_None;
