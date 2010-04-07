@@ -27,7 +27,7 @@ setup(
     packages=['send2trash'],
     scripts=[],
     ext_modules = exts,
-    url='http://www.hardcoded.net/docs/send2trash/',
+    url='http://hg.hardcoded.net/send2trash/',
     license='LICENSE',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
 )
