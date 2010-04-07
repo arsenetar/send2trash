@@ -30,6 +30,7 @@ static PyObject* send2trash_osx_send(PyObject *self, PyObject *args)
 
 static PyMethodDef TrashMethods[] = {
     {"send",  send2trash_osx_send, METH_VARARGS, ""},
+    {NULL, NULL, 0, NULL}
 };
 
 PyMODINIT_FUNC
