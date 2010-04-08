@@ -30,4 +30,5 @@ setup(
     url='http://hg.hardcoded.net/send2trash/',
     license='LICENSE',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
+    long_description=open('README').read(),
 )
