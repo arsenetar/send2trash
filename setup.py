@@ -31,4 +31,5 @@ setup(
     license='LICENSE',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
     long_description=open('README').read(),
+    zip_safe=False,
 )
