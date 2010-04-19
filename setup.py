@@ -21,7 +21,7 @@ if sys.platform == 'win32':
 
 setup(
     name='Send2Trash',
-    version='1.0.0',
+    version='1.0.1',
     author='Hardcoded Software',
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],

@@ -1,3 +1,8 @@
+Version 1.0.1 -- 2010/04/19
+---
+
+* Fixed memory leak in OS X module.
+
 Version 1.0.0 -- 2010/04/07
 ---
 
