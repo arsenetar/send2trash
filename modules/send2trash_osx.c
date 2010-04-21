@@ -19,10 +19,10 @@ static PyObject* send2trash_osx_send(PyObject *self, PyObject *args)
         return NULL;
     }
     
-	FSPathMakeRefWithOptions(utf8_chars, kFSPathMakeRefDoNotFollowLeafSymlink, &fp, NULL);
-	op_result = FSMoveObjectToTrashSync(&fp, NULL, kFSFileOperationDefaultOptions);
-	PyMem_Free(utf8_chars);
-	if (op_result != noErr) {
+    FSPathMakeRefWithOptions(utf8_chars, kFSPathMakeRefDoNotFollowLeafSymlink, &fp, NULL);
+    op_result = FSMoveObjectToTrashSync(&fp, NULL, kFSFileOperationDefaultOptions);
+    PyMem_Free(utf8_chars);
+    if (op_result != noErr) {
         PyErr_SetString(PyExc_OSError, GetMacOSStatusCommentString(op_result));
         return NULL;
     }
