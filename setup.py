@@ -19,6 +19,19 @@ if sys.platform == 'win32':
         extra_link_args = ['shell32.lib'],
     ))
 
+CLASSIFIERS = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Objective C',
+    'Programming Language :: C',
+    'Topic :: Desktop Environment :: File Managers',
+]
+
 setup(
     name='Send2Trash',
     version='1.0.1',
@@ -28,8 +41,9 @@ setup(
     scripts=[],
     ext_modules = exts,
     url='http://hg.hardcoded.net/send2trash/',
-    license='LICENSE',
+    license='BSD License',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
     long_description=open('README').read(),
+    classifiers=CLASSIFIERS,
     zip_safe=False,
 )
