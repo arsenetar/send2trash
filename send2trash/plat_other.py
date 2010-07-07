@@ -4,7 +4,7 @@
 # which should be included with this package. The terms are also available at 
 # http://www.hardcoded.net/licenses/bsd_license
 
-from __future__ import unicode_literals
+
 import sys
 import os
 import os.path as op
@@ -60,8 +60,8 @@ def move_without_conflict(src, dst):
     os.rename(src, destpath)
 
 def send2trash(path):
-    if not isinstance(path, unicode):
-        path = unicode(path, sys.getfilesystemencoding())
+    if not isinstance(path, str):
+        path = str(path, sys.getfilesystemencoding())
     try:
         move_without_conflict(path, TRASH_PATH)
     except OSError:

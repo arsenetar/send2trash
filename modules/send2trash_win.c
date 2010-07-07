@@ -58,11 +58,24 @@ static PyMethodDef TrashMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-PyMODINIT_FUNC
-init_send2trash_win(void)
+static struct PyModuleDef TrashDef = {
+    PyModuleDef_HEAD_INIT,
+    "send2trash_win",
+    NULL,
+    -1,
+    TrashMethods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+PyObject *
+PyInit_send2trash_win(void)
 {
-    PyObject *m = Py_InitModule("_send2trash_win", TrashMethods);
+    PyObject *m = PyModule_Create(&TrashDef);
     if (m == NULL) {
-        return;
+        return NULL;
     }
+    return m;
 }

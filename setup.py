@@ -8,13 +8,13 @@ exts = []
 
 if sys.platform == 'darwin':
     exts.append(Extension(
-        '_send2trash_osx',
+        'send2trash_osx',
         [op.join('modules', 'send2trash_osx.c')],
         extra_link_args=['-framework', 'CoreServices'],
     ))
 if sys.platform == 'win32':
     exts.append(Extension(
-        '_send2trash_win',
+        'send2trash_win',
         [op.join('modules', 'send2trash_win.c')],
         extra_link_args = ['shell32.lib'],
     ))
@@ -26,14 +26,14 @@ CLASSIFIERS = [
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: Microsoft :: Windows',
     'Operating System :: POSIX',
-    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 3',
     'Programming Language :: Objective C',
     'Programming Language :: C',
     'Topic :: Desktop Environment :: File Managers',
 ]
 
 setup(
-    name='Send2Trash',
+    name='Send2Trash3k',
     version='1.0.1',
     author='Hardcoded Software',
     author_email='hsoft@hardcoded.net',
