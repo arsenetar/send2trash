@@ -34,7 +34,7 @@ CLASSIFIERS = [
 
 setup(
     name='Send2Trash',
-    version='1.0.1',
+    version='1.0.2',
     author='Hardcoded Software',
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
