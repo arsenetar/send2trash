@@ -33,8 +33,9 @@ EXTERNAL_CANDIDATES = [
 
 def find_mount_point(path):
     # Even if something's wrong, "/" is a mount point, so the loop will exit.
+    path = op.abspath(path) # Required to avoid infinite loop
     while not op.ismount(path):
-        path = op.join(*op.split(path)[:-1])
+        path = op.split(path)[0]
     return path
 
 def find_ext_volume_trash(volume_root):
