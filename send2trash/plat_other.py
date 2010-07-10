@@ -57,7 +57,7 @@ def move_without_conflict(src, dst):
         counter += 1
         base_name, ext = op.splitext(filename)
         new_filename = '{0} {1}{2}'.format(base_name, counter, ext)
-        destpath = op.join(TRASH_PATH, new_filename)
+        destpath = op.join(dst, new_filename)
     os.rename(src, destpath)
 
 def send2trash(path):
