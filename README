@@ -18,6 +18,8 @@ On Windows, you'll need Visual Studio 2008 to compile it. Note that the install 
 
 To have a cross-platform package you can ship around, you'll have compile the package on both platforms and merge the results so that both compiled modules are in the same package.
 
+There's no package available on PyPI because packages produced by setuptools/distribute are all crappy (god I hate packaging). That's, I think, because I look at ``sys.platform`` to determine which of the extension module (if any) has to be built. However, when I create a ``sdist``, only the module of the platform I build it on is included in the source package. I don't know how to go around that and configuring that ``setup()`` function is hell. Just download the source from the repo.
+
 Usage
 -----
 
