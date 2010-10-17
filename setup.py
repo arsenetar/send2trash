@@ -2,16 +2,6 @@ import sys
 import os.path as op
 
 from setuptools import setup
-from distutils.extension import Extension
-
-exts = []
-
-if sys.platform == 'win32':
-    exts.append(Extension(
-        'send2trash_win',
-        [op.join('modules', 'send2trash_win.c')],
-        extra_link_args = ['shell32.lib'],
-    ))
 
 CLASSIFIERS = [
     'Development Status :: 5 - Production/Stable',
@@ -33,7 +23,6 @@ setup(
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
     scripts=[],
-    ext_modules = exts,
     url='http://hg.hardcoded.net/send2trash/',
     license='BSD License',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
