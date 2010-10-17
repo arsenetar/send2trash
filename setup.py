@@ -6,12 +6,6 @@ from distutils.extension import Extension
 
 exts = []
 
-if sys.platform == 'darwin':
-    exts.append(Extension(
-        'send2trash_osx',
-        [op.join('modules', 'send2trash_osx.c')],
-        extra_link_args=['-framework', 'CoreServices'],
-    ))
 if sys.platform == 'win32':
     exts.append(Extension(
         'send2trash_win',
