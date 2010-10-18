@@ -16,9 +16,11 @@ CLASSIFIERS = [
     'Topic :: Desktop Environment :: File Managers',
 ]
 
+LONG_DESCRIPTION = open('README', 'rt').read() + '\n\n' + open('CHANGES', 'rt').read()
+
 setup(
     name='Send2Trash3k',
-    version='1.0.2',
+    version='1.1.0',
     author='Hardcoded Software',
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
@@ -26,7 +28,7 @@ setup(
     url='http://hg.hardcoded.net/send2trash/',
     license='BSD License',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
-    long_description=open('README').read(),
+    long_description=LONG_DESCRIPTION,
     classifiers=CLASSIFIERS,
     zip_safe=False,
 )
