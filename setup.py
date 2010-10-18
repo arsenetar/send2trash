@@ -11,8 +11,6 @@ CLASSIFIERS = [
     'Operating System :: Microsoft :: Windows',
     'Operating System :: POSIX',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Objective C',
-    'Programming Language :: C',
     'Topic :: Desktop Environment :: File Managers',
 ]
 
