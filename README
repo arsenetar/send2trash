@@ -2,23 +2,19 @@
 Send2Trash -- Send files to trash on all platforms
 ==================================================
 
-This is a Python 2 package. The Python 3 package is at http://pypi.python.org/pypi/Send2Trash3k .
+This is a Python 3 package. The Python 2 package is at http://pypi.python.org/pypi/Send2Trash .
 
 Send2Trash is a small package that sends files to the Trash (or Recycle Bin) *natively* and on
 *all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls, on Windows, it uses native (and ugly) ``SHFileOperation`` win32 calls. On other platforms, it moves the file to the first folder it finds that looks like a trash (so far, it's known to work on Ubuntu).
+
+``ctypes`` is used to access native libraries, so no compilation is necessary.
 
 Installation
 ------------
 
 Download the source from http://hg.hardcoded.net/send2trash and install it with::
 
->>> sudo python setup.py install
-
-On Windows, you'll need Visual Studio 2008 to compile it. Note that the install you'll get will not be a "universal" package. If you install it on OS X, only the "osx" module will be compiled, and if you install it on Windows, only the "win" module will be compiled.
-
-To have a cross-platform package you can ship around, you'll have compile the package on both platforms and merge the results so that both compiled modules are in the same package.
-
-There's no package available on PyPI because packages produced by setuptools/distribute are all crappy (god I hate packaging). That's, I think, because I look at ``sys.platform`` to determine which of the extension module (if any) has to be built. However, when I create a ``sdist``, only the module of the platform I build it on is included in the source package. I don't know how to go around that and configuring that ``setup()`` function is hell. Just download the source from the repo.
+>>> python setup.py install
 
 Usage
 -----
