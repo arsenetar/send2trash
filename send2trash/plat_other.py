@@ -4,32 +4,84 @@
 # which should be included with this package. The terms are also available at 
 # http://www.hardcoded.net/licenses/bsd_license
 
+# This is a reimplementation of plat_other.py with reference to the
+# freedesktop.org trash specification:
+#   [1] http://www.freedesktop.org/wiki/Specifications/trash-spec
+#   [2] http://www.ramendik.ru/docs/trashspec.html
+# See also:
+#   [3] http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+#
+# For external volumes this implementation will raise an exception if it can't
+# find or create the user's trash directory.
 
 import sys
 import os
 import os.path as op
 import logging
+from datetime import datetime
+from stat import *
 
-CANDIDATES = [
-    '~/.local/share/Trash/files',
-    '~/.Trash',
-]
+FILES_DIR = 'files'
+INFO_DIR = 'info'
+INFO_SUFFIX = '.trashinfo'
 
-for candidate in CANDIDATES:
-    candidate_path = op.expanduser(candidate)
-    if op.exists(candidate_path):
-        TRASH_PATH = candidate_path
-        break
-else:
-    logging.warning("Can't find path for Trash")
-    TRASH_PATH = op.expanduser('~/.Trash')
+# Default of ~/.local/share [3]
+XDG_DATA_HOME = os.environ.get('XDG_DATA_HOME') or '~/.local/share'
+HOMETRASH = op.expanduser(op.join(XDG_DATA_HOME,'Trash'))
 
-EXTERNAL_CANDIDATES = [
-    '.Trash-1000/files',
-    '.Trash/files',
-    '.Trash-1000',
-    '.Trash',
-]
+uid = os.getuid()
+TOPDIR_TRASH = '.Trash'
+TOPDIR_FALLBACK = '.Trash-' + str(uid)
+
+def is_parent(parent, path):
+    path = op.abspath(path)
+    parent = op.abspath(parent)
+    while path != '/':
+        path = op.abspath(op.join(path, '..'))
+        if path == parent:
+            return True
+    return False
+
+def format_date(date):
+    return date.strftime("%Y-%m-%dT%H:%M:%S")
+
+def info_for(src, topdir):
+    # ...it MUST not include a ".."" directory, and for files not "under" that
+    # directory, absolute pathnames must be used. [2]
+    if topdir == None or not is_parent(topdir, src):
+        src = op.abspath(src)
+    else:
+        src = op.relpath(src, topdir)
+
+    info  = "[Trash Info]\n"
+    info += "Path=" + src + "\n"
+    info += "DeletionDate=" + format_date(datetime.now()) + "\n"
+    return info
+
+def check_create(dir):
+    # use 0700 for paths [3]
+    if not op.exists(dir):
+        os.makedirs(dir, 0o700)
+
+def trash_move(src, dst, topdir=None):
+    filename = op.basename(src)
+    filespath = op.join(dst, FILES_DIR)
+    infopath = op.join(dst, INFO_DIR)
+    base_name, ext = op.splitext(filename)
+
+    counter = 0
+    destname = filename
+    while op.exists(op.join(filespath, destname)) or op.exists(op.join(infopath, destname + INFO_SUFFIX)):
+        counter += 1
+        destname = '%s %s%s' % (base_name, counter, ext)
+    
+    check_create(filespath)
+    check_create(infopath)
+    
+    os.rename(src, op.join(filespath, destname))
+    f = open(op.join(infopath, destname + INFO_SUFFIX), 'w')
+    f.write(info_for(src, topdir))
+    f.close()
 
 def find_mount_point(path):
     # Even if something's wrong, "/" is a mount point, so the loop will exit.
@@ -38,35 +90,47 @@ def find_mount_point(path):
         path = op.split(path)[0]
     return path
 
-def find_ext_volume_trash(volume_root):
-    for candidate in EXTERNAL_CANDIDATES:
-        candidate_path = op.join(volume_root, candidate)
-        if op.exists(candidate_path):
-            return candidate_path
-    else:
-        # Something's wrong here. Screw that, just create a .Trash folder
-        trash_path = op.join(volume_root, '.Trash')
-        os.mkdir(trash_path)
-        return trash_path
+def find_ext_volume_global_trash(volume_root):
+    # from [2] Trash directories (1) check for a .Trash dir with the right
+    # permissions set.
+    trash_dir = op.join(volume_root, TOPDIR_TRASH)
+    if not op.exists(trash_dir):
+        return None
+    
+    mode = os.lstat(trash_dir).st_mode
+    # vol/.Trash must be a directory, cannot be a symlink, and must have the
+    # sticky bit set.
+    if not op.isdir(trash_dir) or op.islink(trash_dir) or not (mode & S_ISVTX):
+        return None
 
-def move_without_conflict(src, dst):
-    filename = op.basename(src)
-    destpath = op.join(dst, filename)
-    counter = 0
-    while op.exists(destpath):
-        counter += 1
-        base_name, ext = op.splitext(filename)
-        new_filename = '{0} {1}{2}'.format(base_name, counter, ext)
-        destpath = op.join(dst, new_filename)
-    os.rename(src, destpath)
+    trash_dir = op.join(trash_dir, str(uid))
+    try:
+        check_create(trash_dir)
+    except OSError:
+        return None
+    return trash_dir
+
+def find_ext_volume_fallback_trash(volume_root):
+    # from [2] Trash directories (1) create a .Trash-$uid dir.
+    trash_dir = op.join(volume_root, TOPDIR_FALLBACK)
+    # Try to make the directory, if we can't the OSError exception will escape
+    # be thrown out of send2trash.
+    check_create(trash_dir)
+    return trash_dir
+
+def find_ext_volume_trash(volume_root):
+    trash_dir = find_ext_volume_global_trash(volume_root)
+    if trash_dir == None:
+        trash_dir = find_ext_volume_fallback_trash(volume_root)
+    return trash_dir
 
 def send2trash(path):
     if not isinstance(path, str):
         path = str(path, sys.getfilesystemencoding())
     try:
-        move_without_conflict(path, TRASH_PATH)
+        trash_move(path, HOMETRASH, XDG_DATA_HOME)
     except OSError:
-        # We're probably on an external volume
+        # Check if we're on an external volume
         mount_point = find_mount_point(path)
         dest_trash = find_ext_volume_trash(mount_point)
-        move_without_conflict(path, dest_trash)
+        trash_move(path, dest_trash, mount_point)
