@@ -19,7 +19,7 @@ import os
 import os.path as op
 import logging
 from datetime import datetime
-from stat import *
+import stat
 
 FILES_DIR = 'files'
 INFO_DIR = 'info'
@@ -100,7 +100,7 @@ def find_ext_volume_global_trash(volume_root):
     mode = os.lstat(trash_dir).st_mode
     # vol/.Trash must be a directory, cannot be a symlink, and must have the
     # sticky bit set.
-    if not op.isdir(trash_dir) or op.islink(trash_dir) or not (mode & S_ISVTX):
+    if not op.isdir(trash_dir) or op.islink(trash_dir) or not (mode & stat.S_ISVTX):
         return None
 
     trash_dir = op.join(trash_dir, str(uid))
