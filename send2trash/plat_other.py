@@ -48,7 +48,7 @@ def format_date(date):
 def info_for(src, topdir):
     # ...it MUST not include a ".."" directory, and for files not "under" that
     # directory, absolute pathnames must be used. [2]
-    if topdir == None or not is_parent(topdir, src):
+    if topdir is None or not is_parent(topdir, src):
         src = op.abspath(src)
     else:
         src = op.relpath(src, topdir)
@@ -120,7 +120,7 @@ def find_ext_volume_fallback_trash(volume_root):
 
 def find_ext_volume_trash(volume_root):
     trash_dir = find_ext_volume_global_trash(volume_root)
-    if trash_dir == None:
+    if trash_dir is None:
         trash_dir = find_ext_volume_fallback_trash(volume_root)
     return trash_dir
 
