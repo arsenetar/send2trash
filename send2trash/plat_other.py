@@ -20,6 +20,7 @@ import os.path as op
 import logging
 from datetime import datetime
 import stat
+from urllib.parse import quote
 
 FILES_DIR = 'files'
 INFO_DIR = 'info'
@@ -54,7 +55,7 @@ def info_for(src, topdir):
         src = op.relpath(src, topdir)
 
     info  = "[Trash Info]\n"
-    info += "Path=" + src + "\n"
+    info += "Path=" + quote(src) + "\n"
     info += "DeletionDate=" + format_date(datetime.now()) + "\n"
     return info
 
