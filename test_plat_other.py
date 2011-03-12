@@ -3,6 +3,10 @@ import os
 from os import path as op
 from send2trash.plat_other import send2trash
 from configparser import ConfigParser
+
+# XXX Although this unittest is better than no unit test at all, it would be better to mock
+# os.path.mountpoint() rather than going through ramfs (and requiring admin rights).
+
 #
 # Warning: This test will shit up your Trash folder with test.txt files.
 #

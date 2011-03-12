@@ -17,7 +17,6 @@
 import sys
 import os
 import os.path as op
-import logging
 from datetime import datetime
 import stat
 from urllib.parse import quote
@@ -27,21 +26,17 @@ INFO_DIR = 'info'
 INFO_SUFFIX = '.trashinfo'
 
 # Default of ~/.local/share [3]
-XDG_DATA_HOME = os.environ.get('XDG_DATA_HOME') or '~/.local/share'
-HOMETRASH = op.expanduser(op.join(XDG_DATA_HOME,'Trash'))
+XDG_DATA_HOME = op.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
+HOMETRASH = op.join(XDG_DATA_HOME, 'Trash')
 
 uid = os.getuid()
 TOPDIR_TRASH = '.Trash'
 TOPDIR_FALLBACK = '.Trash-' + str(uid)
 
 def is_parent(parent, path):
-    path = op.abspath(path)
-    parent = op.abspath(parent)
-    while path != '/':
-        path = op.abspath(op.join(path, '..'))
-        if path == parent:
-            return True
-    return False
+    path = op.realpath(path) # In case it's a symlink
+    parent = op.realpath(parent)
+    return path.startswith(parent)
 
 def format_date(date):
     return date.strftime("%Y-%m-%dT%H:%M:%S")
@@ -128,6 +123,8 @@ def find_ext_volume_trash(volume_root):
 def send2trash(path):
     if not isinstance(path, str):
         path = str(path, sys.getfilesystemencoding())
+    if not op.exists(path):
+        raise OSError("File not found: %s" % path)
     try:
         trash_move(path, HOMETRASH, XDG_DATA_HOME)
     except OSError:
