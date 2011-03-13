@@ -112,11 +112,16 @@ class TestSymlink(TestExtVol):
     # Since is_parent uses realpath(), and our getdev uses is_parent,
     # this should work
     self.slDir = mktemp(prefix='s2t', dir=op.expanduser('~'))
-    os.symlink(self.trashTopdir, self.slDir)
+    
+    os.mkdir(op.join(self.trashTopdir, 'subdir'), 0o700)
+    self.filePath = op.join(self.trashTopdir, 'subdir', self.fileName)
+    touch(self.filePath)
+    os.symlink(op.join(self.trashTopdir, 'subdir'), self.slDir)
 
   def test_trash(self):
     s2t(op.join(self.slDir, self.fileName))
     self.assertFalse(op.exists(self.filePath))
+    self.assertTrue(op.exists(op.join(self.trashTopdir, '.Trash-' + str(os.getuid()), 'files', self.fileName)))
 
   def tearDown(self):
     os.remove(self.slDir)
