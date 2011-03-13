@@ -1,84 +1,108 @@
 import unittest
 import os
 from os import path as op
-from send2trash.plat_other import send2trash
+import send2trash.plat_other
+from send2trash.plat_other import send2trash as s2t
 from configparser import ConfigParser
+from tempfile import mkdtemp, NamedTemporaryFile
+import shutil
+import stat
+# Could still use cleaning up. But no longer relies on ramfs.
 
-# XXX Although this unittest is better than no unit test at all, it would be better to mock
-# os.path.mountpoint() rather than going through ramfs (and requiring admin rights).
+def touch(path):
+  with open(path, 'a'):
+    os.utime(path, None)
 
-#
-# Warning: This test will shit up your Trash folder with test.txt files.
-#
 class TestHomeTrash(unittest.TestCase):
   def setUp(self):
-    self.filePath = op.expanduser("~/test.txt")
+    self.file = NamedTemporaryFile(dir=op.expanduser("~"), 
+      prefix='send2trash_test', delete=False)
 
   def test_trash(self):
-    os.system('touch ' + self.filePath)
-    send2trash(self.filePath)
-    self.assertFalse(op.exists(self.filePath))
-
-#
-# Following cases use sudo, require ramfs
-#
-class TestRamFs(unittest.TestCase):
-  def setUp(self):
-    # Create a ramfs thingy.
-    self.trashFolder = '/tmp/trashtest'
-    os.system('sudo mkdir ' + self.trashFolder)
-    os.system('sudo mount -t ramfs none ' + self.trashFolder)
-    self.fileName = 'test.txt'
-    self.filePath = op.join(self.trashFolder, self.fileName)
+    s2t(self.file.name)
+    self.assertFalse(op.exists(self.file.name))
 
   def tearDown(self):
-    os.system('sudo umount ' + self.trashFolder)
-    os.system('sudo rmdir ' + self.trashFolder)
+    hometrash = send2trash.plat_other.HOMETRASH
+    name = op.basename(self.file.name)
+    os.remove(op.join(hometrash, 'files', name))
+    os.remove(op.join(hometrash, 'info', name+'.trashinfo'))
 
-class TestTopdirTrash(TestRamFs):
+#
+# Tests for files on some other volume than the user's home directory.
+#
+# What we need to stub:
+# * plat_other.get_dev (to make sure the file will not be on the home dir dev)
+# * os.path.ismount (to make our topdir look like a top dir)
+#
+class TestExtVol(unittest.TestCase):
   def setUp(self):
-    TestRamFs.setUp(self)
+    self.trashTopdir = mkdtemp(prefix='s2t')
+    self.fileName = 'test.txt'
+    self.filePath = op.join(self.trashTopdir, self.fileName)
+    touch(self.filePath)
+
+    self.old_ismount = old_ismount = op.ismount
+    self.old_getdev = send2trash.plat_other.get_dev
+    def s_getdev(path):
+      from send2trash.plat_other import is_parent
+      st = os.lstat(path)
+      if is_parent(self.trashTopdir, path):
+        return 'dev'
+      return st
+    def s_ismount(path):
+      if op.realpath(path) == op.realpath(self.trashTopdir):
+        return True
+      return old_ismount(path)
+
+    send2trash.plat_other.os.path.ismount = s_ismount
+    send2trash.plat_other.get_dev = s_getdev
+
+  def tearDown(self):
+    send2trash.plat_other.get_dev = self.old_getdev
+    send2trash.plat_other.os.path.ismount = self.old_ismount
+    shutil.rmtree(self.trashTopdir)
+
+class TestTopdirTrash(TestExtVol):
+  def setUp(self):
+    TestExtVol.setUp(self)
     # Create a .Trash dir w/ a sticky bit
-    os.system('sudo chmod a+w ' + self.trashFolder)
-    os.system('sudo mkdir ' + op.join(self.trashFolder, '.Trash'))
-    os.system('sudo chmod a+wt ' + op.join(self.trashFolder, '.Trash'))
+    self.trashDir = op.join(self.trashTopdir, '.Trash')
+    os.mkdir(self.trashDir, 0o777|stat.S_ISVTX)
 
   def test_trash(self):
-    os.system('touch ' + self.filePath)
-    send2trash(self.filePath)
+    s2t(self.filePath)
     self.assertFalse(op.exists(self.filePath))
-    self.assertTrue(op.exists(op.join(self.trashFolder, '.Trash', str(os.getuid()), 'files', self.fileName)))
-    self.assertTrue(op.exists(op.join(self.trashFolder, '.Trash', str(os.getuid()), 'info', self.fileName + '.trashinfo')))
+    self.assertTrue(op.exists(op.join(self.trashDir, str(os.getuid()), 'files', self.fileName)))
+    self.assertTrue(op.exists(op.join(self.trashDir, str(os.getuid()), 'info', self.fileName + '.trashinfo')))
     # info relative path (if another test is added, with the same fileName/Path,
     # then it gets renamed etc.)
     cfg = ConfigParser()
-    cfg.read(op.join(self.trashFolder, '.Trash', str(os.getuid()), 'info', self.fileName + '.trashinfo'))
+    cfg.read(op.join(self.trashDir, str(os.getuid()), 'info', self.fileName + '.trashinfo'))
     self.assertEqual(self.fileName, cfg.get('Trash Info', 'Path', 1))
 
 # Test .Trash-UID
-class TestTopdirTrashFallback(TestRamFs):
-  def setUp(self):
-    TestRamFs.setUp(self)
-    # DONT Create a .Trash dir, but make sure the topdir is writable for uid dir
-    os.system('sudo chmod a+w ' + self.trashFolder)
-
+class TestTopdirTrashFallback(TestExtVol):
   def test_trash(self):
-    os.system('touch ' + self.filePath)
-    send2trash(self.filePath)
+    touch(self.filePath)
+    s2t(self.filePath)
     self.assertFalse(op.exists(self.filePath))
-    self.assertTrue(op.exists(op.join(self.trashFolder, '.Trash-' + str(os.getuid()), 'files', self.fileName)))
+    self.assertTrue(op.exists(op.join(self.trashTopdir, '.Trash-' + str(os.getuid()), 'files', self.fileName)))
 
 # Test failure
-class TestTopdirFailure(TestRamFs):
-  def test_trash(self):
-    # a file to call our own
-    os.system('sudo chmod o+w ' + self.trashFolder)
-    os.system('touch ' + self.filePath)
-    os.system('sudo chmod o-w ' + self.trashFolder)
+class TestTopdirFailure(TestExtVol):
+  def setUp(self):
+    TestExtVol.setUp(self)
+    os.chmod(self.trashTopdir, 0o500) # not writable to induce the exception
 
+  def test_trash(self):
     with self.assertRaises(OSError):
-      send2trash(self.filePath)
+      s2t(self.filePath)
     self.assertTrue(op.exists(self.filePath))
+
+  def tearDown(self):
+    os.chmod(self.trashTopdir, 0o700) # writable to allow deletion
+    TestExtVol.tearDown(self)
 
 if __name__ == '__main__':
   unittest.main()
