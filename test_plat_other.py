@@ -4,7 +4,7 @@ from os import path as op
 import send2trash.plat_other
 from send2trash.plat_other import send2trash as s2t
 from configparser import ConfigParser
-from tempfile import mkdtemp, NamedTemporaryFile
+from tempfile import mkdtemp, NamedTemporaryFile, mktemp
 import shutil
 import stat
 # Could still use cleaning up. But no longer relies on ramfs.
@@ -102,6 +102,24 @@ class TestTopdirFailure(TestExtVol):
 
   def tearDown(self):
     os.chmod(self.trashTopdir, 0o700) # writable to allow deletion
+    TestExtVol.tearDown(self)
+
+# Make sure it will find the mount point properly for a file in a symlinked path
+class TestSymlink(TestExtVol):
+  def setUp(self):
+    TestExtVol.setUp(self)
+    # Use mktemp (race conditioney but no symlink equivalent)
+    # Since is_parent uses realpath(), and our getdev uses is_parent,
+    # this should work
+    self.slDir = mktemp(prefix='s2t', dir=op.expanduser('~'))
+    os.symlink(self.trashTopdir, self.slDir)
+
+  def test_trash(self):
+    s2t(op.join(self.slDir, self.fileName))
+    self.assertFalse(op.exists(self.filePath))
+
+  def tearDown(self):
+    os.remove(self.slDir)
     TestExtVol.tearDown(self)
 
 if __name__ == '__main__':
