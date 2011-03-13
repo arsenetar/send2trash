@@ -121,15 +121,34 @@ def find_ext_volume_trash(volume_root):
         trash_dir = find_ext_volume_fallback_trash(volume_root)
     return trash_dir
 
+# Pull this out so it's easy to stub (to avoid stubbing lstat itself)
+def get_dev(path):
+    return os.lstat(path).st_dev
+
 def send2trash(path):
     if not isinstance(path, str):
         path = str(path, sys.getfilesystemencoding())
     if not op.exists(path):
         raise OSError("File not found: %s" % path)
-    try:
-        trash_move(path, HOMETRASH, XDG_DATA_HOME)
-    except OSError:
-        # Check if we're on an external volume
-        mount_point = find_mount_point(path)
-        dest_trash = find_ext_volume_trash(mount_point)
-        trash_move(path, dest_trash, mount_point)
+    # ...should check whether the user has the necessary permissions to delete
+    # it, before starting the trashing operation itself. [2]
+    if not os.access(path, os.W_OK):
+        raise OSError("Permission denied: %s" % path)
+    # if the file to be trashed is on the same device as HOMETRASH we
+    # want to move it there.
+    path_dev = get_dev(path)
+    
+    # If XDG_DATA_HOME or HOMETRASH do not yet exist we need to stat the
+    # home directory, and these paths will be created further on if needed.
+    trash_dev = get_dev(op.expanduser('~'))
+
+    if path_dev == trash_dev:
+        topdir = XDG_DATA_HOME
+        dest_trash = HOMETRASH
+    else:
+        topdir = find_mount_point(path)
+        trash_dev = get_dev(topdir)
+        if trash_dev != path_dev:
+            raise OSError("Couldn't find mount point for %s" % path)
+        dest_trash = find_ext_volume_trash(topdir)
+    trash_move(path, dest_trash, topdir)
