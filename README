@@ -5,7 +5,7 @@ Send2Trash -- Send files to trash on all platforms
 This is a Python 3 package. The Python 2 package is at http://pypi.python.org/pypi/Send2Trash .
 
 Send2Trash is a small package that sends files to the Trash (or Recycle Bin) *natively* and on
-*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls, on Windows, it uses native (and ugly) ``SHFileOperation`` win32 calls. On other platforms, it moves the file to the first folder it finds that looks like a trash (so far, it's known to work on Ubuntu).
+*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls, on Windows, it uses native (and ugly) ``SHFileOperation`` win32 calls. On other platforms, it follows the trash specifications from freedesktop.org.
 
 ``ctypes`` is used to access native libraries, so no compilation is necessary.
 

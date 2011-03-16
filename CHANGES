@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 1.2.0 -- 2011/03/16
+---------------------------
+
+* Improved ``plat_other`` to follow freedesktop.org trash specification.
+
 Version 1.1.0 -- 2010/10/18
 ---------------------------
 
