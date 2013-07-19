@@ -19,7 +19,7 @@ LONG_DESCRIPTION = open('README.rst', 'rt').read() + '\n\n' + open('CHANGES.rst'
 
 setup(
     name='Send2Trash',
-    version='1.2.0',
+    version='1.3.0',
     author='Hardcoded Software',
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
@@ -29,5 +29,4 @@ setup(
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
     long_description=LONG_DESCRIPTION,
     classifiers=CLASSIFIERS,
-    zip_safe=False,
 )
