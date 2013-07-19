@@ -10,6 +10,7 @@ CLASSIFIERS = [
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: Microsoft :: Windows',
     'Operating System :: POSIX',
+    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
     'Topic :: Desktop Environment :: File Managers',
 ]
@@ -17,7 +18,7 @@ CLASSIFIERS = [
 LONG_DESCRIPTION = open('README.rst', 'rt').read() + '\n\n' + open('CHANGES.rst', 'rt').read()
 
 setup(
-    name='Send2Trash3k',
+    name='Send2Trash',
     version='1.2.0',
     author='Hardcoded Software',
     author_email='hsoft@hardcoded.net',

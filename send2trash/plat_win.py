@@ -1,12 +1,16 @@
-# Copyright 2010 Hardcoded Software (http://www.hardcoded.net)
+# Copyright 2013 Hardcoded Software (http://www.hardcoded.net)
 
 # This software is licensed under the "BSD" License as described in the "LICENSE" file, 
 # which should be included with this package. The terms are also available at 
 # http://www.hardcoded.net/licenses/bsd_license
 
+from __future__ import unicode_literals
+
 from ctypes import windll, Structure, byref, c_uint
 from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
 import os.path as op
+
+from .compat import text_type
 
 shell32 = windll.shell32
 SHFileOperationW = shell32.SHFileOperationW
@@ -35,8 +39,8 @@ FOF_ALLOWUNDO = 64
 FOF_NOERRORUI = 1024
 
 def send2trash(path):
-    if not isinstance(path, str):
-        path = str(path, 'mbcs')
+    if not isinstance(path, text_type):
+        path = text_type(path, 'mbcs')
     if not op.isabs(path):
         path = op.abspath(path)
     fileop = SHFILEOPSTRUCTW()

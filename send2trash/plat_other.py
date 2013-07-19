@@ -1,4 +1,4 @@
-# Copyright 2010 Hardcoded Software (http://www.hardcoded.net)
+# Copyright 2013 Hardcoded Software (http://www.hardcoded.net)
 
 # This software is licensed under the "BSD" License as described in the "LICENSE" file, 
 # which should be included with this package. The terms are also available at 
@@ -14,12 +14,18 @@
 # For external volumes this implementation will raise an exception if it can't
 # find or create the user's trash directory.
 
+from __future__ import unicode_literals
+
 import sys
 import os
 import os.path as op
 from datetime import datetime
 import stat
-from urllib.parse import quote
+try:
+    from urllib.parse import quote
+except ImportError:
+    # Python 2
+    from urllib import quote
 
 FILES_DIR = 'files'
 INFO_DIR = 'info'

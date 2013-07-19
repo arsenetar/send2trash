@@ -5,10 +5,9 @@
 # http://www.hardcoded.net/licenses/bsd_license
 
 import sys
-
-if sys.platform == 'darwin':
-    from .plat_osx import send2trash
-elif sys.platform == 'win32':
-    from .plat_win import send2trash
+if sys.version < '3':
+    text_type = unicode
+    binary_type = str
 else:
-    from .plat_other import send2trash
+    text_type = str
+    binary_type = bytes
