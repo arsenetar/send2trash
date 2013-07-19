@@ -14,7 +14,7 @@ CLASSIFIERS = [
     'Topic :: Desktop Environment :: File Managers',
 ]
 
-LONG_DESCRIPTION = open('README', 'rt').read() + '\n\n' + open('CHANGES', 'rt').read()
+LONG_DESCRIPTION = open('README.rst', 'rt').read() + '\n\n' + open('CHANGES.rst', 'rt').read()
 
 setup(
     name='Send2Trash3k',
