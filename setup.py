@@ -23,7 +23,7 @@ setup(
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
     scripts=[],
-    url='http://hg.hardcoded.net/send2trash/',
+    url='http://github.com/hsoft/send2trash',
     license='BSD License',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
     long_description=LONG_DESCRIPTION,

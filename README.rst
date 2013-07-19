@@ -12,7 +12,7 @@ Send2Trash is a small package that sends files to the Trash (or Recycle Bin) *na
 Installation
 ------------
 
-Download the source from http://hg.hardcoded.net/send2trash and install it with::
+Download the source from http://github.com/hsoft/send2trash and install it with::
 
 >>> python setup.py install
 
