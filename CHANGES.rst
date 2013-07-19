@@ -5,7 +5,7 @@ Version 1.3.0 -- 2013/07/19
 ---------------------------
 
 * Added support for Gnome's GIO.
-* Merged Python 3 and Python 2 vesion in a single codebase.
+* Merged Python 3 and Python 2 versions in a single codebase.
 
 Version 1.2.0 -- 2011/03/16
 ---------------------------
