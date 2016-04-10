@@ -48,7 +48,7 @@ def format_date(date):
     return date.strftime("%Y-%m-%dT%H:%M:%S")
 
 def info_for(src, topdir):
-    # ...it MUST not include a ".."" directory, and for files not "under" that
+    # ...it MUST not include a ".." directory, and for files not "under" that
     # directory, absolute pathnames must be used. [2]
     if topdir is None or not is_parent(topdir, src):
         src = op.abspath(src)
