@@ -133,7 +133,7 @@ def get_dev(path):
 
 def send2trash(path):
     if not isinstance(path, str):
-        path = str(path, sys.getfilesystemencoding())
+        path = str(path).encode(sys.getfilesystemencoding())
     if not op.exists(path):
         raise OSError("File not found: %s" % path)
     # ...should check whether the user has the necessary permissions to delete
