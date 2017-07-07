@@ -27,6 +27,9 @@ except ImportError:
     # Python 2
     from urllib import quote
 
+# PY2-PY3 compatibilty
+text_type = str if sys.version_info[0] == 3 else unicode
+
 FILES_DIR = 'files'
 INFO_DIR = 'info'
 INFO_SUFFIX = '.trashinfo'
@@ -37,7 +40,7 @@ HOMETRASH = op.join(XDG_DATA_HOME, 'Trash')
 
 uid = os.getuid()
 TOPDIR_TRASH = '.Trash'
-TOPDIR_FALLBACK = '.Trash-' + str(uid)
+TOPDIR_FALLBACK = '.Trash-' + text_type(uid)
 
 def is_parent(parent, path):
     path = op.realpath(path) # In case it's a symlink
@@ -106,7 +109,7 @@ def find_ext_volume_global_trash(volume_root):
     if not op.isdir(trash_dir) or op.islink(trash_dir) or not (mode & stat.S_ISVTX):
         return None
 
-    trash_dir = op.join(trash_dir, str(uid))
+    trash_dir = op.join(trash_dir, text_type(uid))
     try:
         check_create(trash_dir)
     except OSError:
@@ -132,8 +135,8 @@ def get_dev(path):
     return os.lstat(path).st_dev
 
 def send2trash(path):
-    if not isinstance(path, str):
-        path = str(path, sys.getfilesystemencoding())
+    if not isinstance(path, text_type):
+        path = text_type(path, sys.getfilesystemencoding())
     if not op.exists(path):
         raise OSError("File not found: %s" % path)
     # ...should check whether the user has the necessary permissions to delete
