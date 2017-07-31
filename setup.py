@@ -1,6 +1,3 @@
-import sys
-import os.path as op
-
 from setuptools import setup
 
 CLASSIFIERS = [
@@ -19,12 +16,12 @@ LONG_DESCRIPTION = open('README.rst', 'rt').read() + '\n\n' + open('CHANGES.rst'
 
 setup(
     name='Send2Trash',
-    version='1.3.0',
-    author='Hardcoded Software',
+    version='1.3.1',
+    author='Virgil Dupras',
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
     scripts=[],
-    url='http://github.com/hsoft/send2trash',
+    url='https://github.com/hsoft/send2trash',
     license='BSD License',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
     long_description=LONG_DESCRIPTION,

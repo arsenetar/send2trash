@@ -1,6 +1,12 @@
 Changes
 =======
 
+Version 1.3.1 -- 2017/07/31
+---------------------------
+
+* Throw ``WindowsError`` instead of ``OSError`` in ``plat_win``. (#7)
+* Fix ``TypeError`` on python 2 in ``plat_other``. (#12)
+
 Version 1.3.0 -- 2013/07/19
 ---------------------------
 
