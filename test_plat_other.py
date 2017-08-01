@@ -13,6 +13,7 @@ import sys
 # Could still use cleaning up. But no longer relies on ramfs.
 
 HOMETRASH = send2trash.plat_other.HOMETRASH
+PY3 = sys.version_info[0] >= 3
 
 def touch(path):
   with open(path, 'a'):
@@ -71,6 +72,10 @@ class TestUnicodeTrash(unittest.TestCase):
 class TestExtVol(unittest.TestCase):
   def setUp(self):
     self.trashTopdir = mkdtemp(prefix='s2t')
+    if PY3:
+      trashTopdir_b = os.fsencode(self.trashTopdir)
+    else:
+      trashTopdir_b = self.trashTopdir
     self.fileName = 'test.txt'
     self.filePath = op.join(self.trashTopdir, self.fileName)
     touch(self.filePath)
@@ -82,9 +87,10 @@ class TestExtVol(unittest.TestCase):
       st = os.lstat(path)
       if is_parent(self.trashTopdir, path):
         return 'dev'
-      return st
+      return st.st_dev
     def s_ismount(path):
-      if op.realpath(path) == op.realpath(self.trashTopdir):
+      if op.realpath(path) in \
+              (op.realpath(self.trashTopdir), op.realpath(trashTopdir_b)):
         return True
       return old_ismount(path)
 
