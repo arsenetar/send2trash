@@ -79,7 +79,7 @@ class TestTopdirTrash(TestExtVol):
     # then it gets renamed etc.)
     cfg = ConfigParser()
     cfg.read(op.join(self.trashDir, str(os.getuid()), 'info', self.fileName + '.trashinfo'))
-    self.assertEqual(self.fileName, cfg.get('Trash Info', 'Path', 1))
+    self.assertEqual(self.fileName, cfg.get('Trash Info', 'Path', raw=True))
 
 # Test .Trash-UID
 class TestTopdirTrashFallback(TestExtVol):
