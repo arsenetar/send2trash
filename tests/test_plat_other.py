@@ -15,7 +15,7 @@ def touch(path):
 
 class TestHomeTrash(unittest.TestCase):
   def setUp(self):
-    self.file = NamedTemporaryFile(dir=op.expanduser("~"), 
+    self.file = NamedTemporaryFile(dir=op.expanduser("~"),
       prefix='send2trash_test', delete=False)
 
   def test_trash(self):
@@ -79,7 +79,7 @@ class TestTopdirTrash(TestExtVol):
     # then it gets renamed etc.)
     cfg = ConfigParser()
     cfg.read(op.join(self.trashDir, str(os.getuid()), 'info', self.fileName + '.trashinfo'))
-    self.assertEqual(self.fileName, cfg.get('Trash Info', 'Path', 1))
+    self.assertEqual(self.fileName, cfg.get('Trash Info', 'Path', raw=True))
 
 # Test .Trash-UID
 class TestTopdirTrashFallback(TestExtVol):
@@ -112,7 +112,7 @@ class TestSymlink(TestExtVol):
     # Since is_parent uses realpath(), and our getdev uses is_parent,
     # this should work
     self.slDir = mktemp(prefix='s2t', dir=op.expanduser('~'))
-    
+
     os.mkdir(op.join(self.trashTopdir, 'subdir'), 0o700)
     self.filePath = op.join(self.trashTopdir, 'subdir', self.fileName)
     touch(self.filePath)

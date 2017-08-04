@@ -21,6 +21,7 @@ setup(
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
     scripts=[],
+    test_suite='tests',
     url='https://github.com/hsoft/send2trash',
     license='BSD License',
     description='Send file to trash natively under Mac OS X, Windows and Linux.',
