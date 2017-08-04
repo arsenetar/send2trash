@@ -1,7 +1,7 @@
 # Copyright 2013 Hardcoded Software (http://www.hardcoded.net)
 
-# This software is licensed under the "BSD" License as described in the "LICENSE" file, 
-# which should be included with this package. The terms are also available at 
+# This software is licensed under the "BSD" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
 # This is a reimplementation of plat_other.py with reference to the
@@ -27,9 +27,7 @@ except ImportError:
     # Python 2
     from urllib import quote
 
-# PY2-PY3 compatibilty
-text_type = str if sys.version_info[0] == 3 else unicode
-environb = os.environb if sys.version_info[0] >= 3 else os.environ
+from .compat import text_type, environb
 
 try:
     fsencode = os.fsencode   # Python 3
@@ -96,10 +94,10 @@ def trash_move(src, dst, topdir=None):
     while op.exists(op.join(filespath, destname)) or op.exists(op.join(infopath, destname + INFO_SUFFIX)):
         counter += 1
         destname = base_name + b' ' + text_type(counter).encode('ascii') + ext
-    
+
     check_create(filespath)
     check_create(infopath)
-    
+
     os.rename(src, op.join(filespath, destname))
     f = open(op.join(infopath, destname + INFO_SUFFIX), 'w')
     f.write(info_for(src, topdir))
@@ -119,7 +117,7 @@ def find_ext_volume_global_trash(volume_root):
     trash_dir = op.join(volume_root, TOPDIR_TRASH)
     if not op.exists(trash_dir):
         return None
-    
+
     mode = os.lstat(trash_dir).st_mode
     # vol/.Trash must be a directory, cannot be a symlink, and must have the
     # sticky bit set.
@@ -171,7 +169,7 @@ def send2trash(path):
     # if the file to be trashed is on the same device as HOMETRASH we
     # want to move it there.
     path_dev = get_dev(path_b)
-    
+
     # If XDG_DATA_HOME or HOMETRASH do not yet exist we need to stat the
     # home directory, and these paths will be created further on if needed.
     trash_dev = get_dev(op.expanduser(b'~'))

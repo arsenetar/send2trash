@@ -5,6 +5,7 @@ import os
 from os import path as op
 import send2trash.plat_other
 from send2trash.plat_other import send2trash as s2t
+from send2trash.compat import PY3
 from configparser import ConfigParser
 from tempfile import mkdtemp, NamedTemporaryFile, mktemp
 import shutil
@@ -13,7 +14,6 @@ import sys
 # Could still use cleaning up. But no longer relies on ramfs.
 
 HOMETRASH = send2trash.plat_other.HOMETRASH
-PY3 = sys.version_info[0] >= 3
 
 def touch(path):
   with open(path, 'a'):
