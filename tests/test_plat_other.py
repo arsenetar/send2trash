@@ -1,3 +1,5 @@
+# encoding: utf-8
+import codecs
 import unittest
 import os
 from os import path as op
@@ -7,7 +9,11 @@ from configparser import ConfigParser
 from tempfile import mkdtemp, NamedTemporaryFile, mktemp
 import shutil
 import stat
+import sys
 # Could still use cleaning up. But no longer relies on ramfs.
+
+HOMETRASH = send2trash.plat_other.HOMETRASH
+PY3 = sys.version_info[0] >= 3
 
 def touch(path):
   with open(path, 'a'):
@@ -23,10 +29,38 @@ class TestHomeTrash(unittest.TestCase):
     self.assertFalse(op.exists(self.file.name))
 
   def tearDown(self):
-    hometrash = send2trash.plat_other.HOMETRASH
     name = op.basename(self.file.name)
-    os.remove(op.join(hometrash, 'files', name))
-    os.remove(op.join(hometrash, 'info', name+'.trashinfo'))
+    os.remove(op.join(HOMETRASH, 'files', name))
+    os.remove(op.join(HOMETRASH, 'info', name+'.trashinfo'))
+
+def _filesys_enc():
+  enc = sys.getfilesystemencoding()
+  # Get canonical name of codec
+  return codecs.lookup(enc).name
+
+@unittest.skipIf(_filesys_enc() == 'ascii', 'ASCII filesystem')
+class TestUnicodeTrash(unittest.TestCase):
+  def setUp(self):
+    self.name = u'send2trash_tést1'
+    self.file = op.join(op.expanduser(b'~'), self.name.encode('utf-8'))
+    touch(self.file)
+
+  def test_trash_bytes(self):
+    s2t(self.file)
+    assert not op.exists(self.file)
+
+  def test_trash_unicode(self):
+    s2t(self.file.decode(sys.getfilesystemencoding()))
+    assert not op.exists(self.file)
+
+  def tearDown(self):
+    if op.exists(self.file):
+      os.remove(self.file)
+
+    trash_file = op.join(HOMETRASH, 'files', self.name)
+    if op.exists(trash_file):
+      os.remove(trash_file)
+      os.remove(op.join(HOMETRASH, 'info', self.name+'.trashinfo'))
 
 #
 # Tests for files on some other volume than the user's home directory.
@@ -38,6 +72,10 @@ class TestHomeTrash(unittest.TestCase):
 class TestExtVol(unittest.TestCase):
   def setUp(self):
     self.trashTopdir = mkdtemp(prefix='s2t')
+    if PY3:
+      trashTopdir_b = os.fsencode(self.trashTopdir)
+    else:
+      trashTopdir_b = self.trashTopdir
     self.fileName = 'test.txt'
     self.filePath = op.join(self.trashTopdir, self.fileName)
     touch(self.filePath)
@@ -49,9 +87,10 @@ class TestExtVol(unittest.TestCase):
       st = os.lstat(path)
       if is_parent(self.trashTopdir, path):
         return 'dev'
-      return st
+      return st.st_dev
     def s_ismount(path):
-      if op.realpath(path) == op.realpath(self.trashTopdir):
+      if op.realpath(path) in \
+              (op.realpath(self.trashTopdir), op.realpath(trashTopdir_b)):
         return True
       return old_ismount(path)
 
