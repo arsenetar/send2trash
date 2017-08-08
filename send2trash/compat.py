@@ -11,7 +11,9 @@ PY3 = sys.version_info[0] >= 3
 if PY3:
     text_type = str
     binary_type = bytes
-    environb = os.environb
+    if os.supports_bytes_environ:
+        # environb will be unset under Windows, but then again we're not supposed to use it.
+        environb = os.environb
 else:
     text_type = unicode
     binary_type = str
