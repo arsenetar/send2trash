@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 1.4.0 -- 2017/08/07
+---------------------------
+
+* Use ``bytes`` instead of ``str`` for internal path handling in ``plat_other``. (#13)
+
 Version 1.3.1 -- 2017/07/31
 ---------------------------
 
