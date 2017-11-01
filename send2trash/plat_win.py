@@ -6,7 +6,8 @@
 
 from __future__ import unicode_literals
 
-from ctypes import windll, Structure, byref, c_uint
+from ctypes import (windll, Structure, byref, c_uint,
+                    create_unicode_buffer, sizeof, addressof)
 from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
 import os.path as op
 
@@ -46,7 +47,19 @@ def send2trash(path):
     fileop = SHFILEOPSTRUCTW()
     fileop.hwnd = 0
     fileop.wFunc = FO_DELETE
-    fileop.pFrom = LPCWSTR(path + '\0')
+    # FIX: https://github.com/hsoft/send2trash/issues/17
+    # Starting in python 3.6.3 it is no longer possible to use:
+    # LPCWSTR(path + '\0') directly as embedded null characters are no longer
+    # allowed in strings
+    # Workaround 
+    #  - create buffer of c_wchar[] (LPCWSTR is based on this type)
+    #  - buffer is two c_wchar characters longer (double null terminator)
+    #  - cast the address of the buffer to a LPCWSTR
+    # NOTE: based on how python allocates memory for these types they should
+    # always be zero, if this is ever not true we can go back to explicitly
+    # setting the last two characters to null using buffer[index] = '\0'.
+    buffer = create_unicode_buffer(path, len(path)+2)
+    fileop.pFrom = LPCWSTR(addressof(buffer))
     fileop.pTo = None
     fileop.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT
     fileop.fAnyOperationsAborted = 0
