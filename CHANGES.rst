@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 1.4.2 -- 2017/11/17
+---------------------------
+
+* Fix incompatibility with Python 3.6 on Windows. (#18)
+
 Version 1.4.1 -- 2017/08/07
 ---------------------------
 

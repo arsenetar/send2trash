@@ -19,7 +19,7 @@ LONG_DESCRIPTION = open('README.rst', 'rt').read() + '\n\n' + open('CHANGES.rst'
 
 setup(
     name='Send2Trash',
-    version='1.4.1',
+    version='1.4.2',
     author='Virgil Dupras',
     author_email='hsoft@hardcoded.net',
     packages=['send2trash'],
