@@ -16,6 +16,7 @@
 
 from __future__ import unicode_literals
 
+import errno
 import sys
 import os
 import os.path as op
@@ -28,6 +29,7 @@ except ImportError:
     from urllib import quote
 
 from .compat import text_type, environb
+from .exceptions import TrashPermissionError
 
 try:
     fsencode = os.fsencode   # Python 3
@@ -134,9 +136,13 @@ def find_ext_volume_global_trash(volume_root):
 def find_ext_volume_fallback_trash(volume_root):
     # from [2] Trash directories (1) create a .Trash-$uid dir.
     trash_dir = op.join(volume_root, TOPDIR_FALLBACK)
-    # Try to make the directory, if we can't the OSError exception will escape
-    # be thrown out of send2trash.
-    check_create(trash_dir)
+    # Try to make the directory, if we lack permission, raise TrashPermissionError
+    try:
+        check_create(trash_dir)
+    except OSError as e:
+        if e.errno == errno.EACCES:
+            raise TrashPermissionError(e.filename)
+        raise
     return trash_dir
 
 def find_ext_volume_trash(volume_root):
