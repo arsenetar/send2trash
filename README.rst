@@ -29,7 +29,15 @@ Usage
 >>> from send2trash import send2trash
 >>> send2trash('some_file')
 
-When there's a problem ``OSError`` is raised.
+On Freedesktop platforms (Linux, BSD, etc.), you may not be able to efficiently
+trash some files. In these cases, an exception ``send2trash.TrashPermissionError``
+is raised, so that the application can handle this case. This inherits from
+``PermissionError`` (``OSError`` on Python 2). Specifically, this affects
+files on a different device to the user's home directory, where the root of the
+device does not have a ``.Trash`` directory, and we don't have permission to
+create a ``.Trash-$UID`` directory.
+
+For any other problem, ``OSError`` is raised.
 
 .. _PyGObject: https://wiki.gnome.org/PyGObject
 .. _GIO: https://developer.gnome.org/gio/
