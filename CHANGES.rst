@@ -1,6 +1,12 @@
 Changes
 =======
 
+Version 1.5.0 -- 2018/02/16
+---------------------------
+
+* More specific error when failing to create XDG fallback trash directory (#20)
+* Windows: Workaround for long paths (#23)
+
 Version 1.4.2 -- 2017/11/17
 ---------------------------
 
