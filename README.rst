@@ -12,6 +12,28 @@ of the `trash specifications from freedesktop.org`_.
 
 Send2Trash supports Python 2.7 and up (Python 3 is supported).
 
+Status: Maintainer needed
+-------------------------
+
+I haven't had access to a Windows or MacOS environment for years now. I don't
+care for those platforms as much as I used to. I also don't use this library
+any more.
+
+This is the most popular library I've authored and many people and projects
+rely on it. I don't intend on letting it go broken. I am, however, wanting to
+get rid of its maintainership burden.
+
+It's not a big burden, but without access to Windows or MacOS, it can make
+reviewing PRs a but tricky: I have to blind-merge them. That makes me a rather
+bad maintainer for this library. So, for the good of the project, it should be
+someone else.
+
+However, being a relatively popular library makes this task a little tricky.
+As we've seen in the NPM world recently, it has security implications.
+Therefore, I don't intend on passing this to anyone. If you have some clout or
+if I can otherwise have confidence that you'll handle the library responsibly,
+then please contact me and I'll gladly pass this on.
+
 Installation
 ------------
 
