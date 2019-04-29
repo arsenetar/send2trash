@@ -4,7 +4,24 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+matrix:
+  include:
+    # Obtain Python 3.7 from xenial as per https://github.com/travis-ci/travis-ci/issues/9815
+    - python: "3.7"
+      dist: xenial
+    - os: windows
+      language: sh
+      python: 3
+      # Perform the manual steps on windows to install python3 and tox
+      before_install:
+        - choco install python3 --params "/InstallDir:C:\Python"
+        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
+        - python -m pip install --upgrade pip
+      before_script:
+        - export TOXENV=py3-win
 install:
-  - "pip install tox"
+  - pip install tox
+before_script:
+  - export TOXENV=$(echo py$TRAVIS_PYTHON_VERSION | tr -d .)
 script:
-  - "tox -e $(echo py$TRAVIS_PYTHON_VERSION | tr -d .)"
+  - tox
