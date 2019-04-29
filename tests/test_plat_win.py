@@ -9,11 +9,39 @@ from send2trash import send2trash as s2t
 
 
 @unittest.skipIf(sys.platform != 'win32', 'Windows only')
+class TestNormal(unittest.TestCase):
+    def setUp(self):
+        self.dirname = '\\\\?\\' + op.join(gettempdir(), 'python.send2trash')
+        self.file = op.join(self.dirname, 'testfile.txt')
+        self._create_tree(self.file)
+
+    def tearDown(self):
+        try:
+            os.remove(self.dirname)
+        except OSError:
+            pass
+
+    def _create_tree(self, path):
+        dirname = op.dirname(path)
+        if not op.isdir(dirname):
+            os.makedirs(dirname)
+        with open(path, 'w') as writer:
+            writer.write('send2trash test')
+
+    def test_trash_file(self):
+        s2t(self.file)
+        self.assertFalse(op.exists(self.file))
+
+    def test_file_not_found(self):
+        file = op.join(self.dirname, 'otherfile.txt')
+        self.assertRaises(WindowsError, s2t, file)
+
+@unittest.skipIf(sys.platform != 'win32', 'Windows only')
 class TestLongPath(unittest.TestCase):
     def setUp(self):
         filename = 'A' * 100
-        self.dirname = '\\\\?\\' + os.path.join(gettempdir(), filename)
-        self.file = os.path.join(
+        self.dirname = '\\\\?\\' + op.join(gettempdir(), filename)
+        self.file = op.join(
             self.dirname,
             filename,
             filename,  # From there, the path is not trashable from Explorer
@@ -28,8 +56,8 @@ class TestLongPath(unittest.TestCase):
             pass
 
     def _create_tree(self, path):
-        dirname = os.path.dirname(path)
-        if not os.path.isdir(dirname):
+        dirname = op.dirname(path)
+        if not op.isdir(dirname):
             os.makedirs(dirname)
         with open(path, 'w') as writer:
             writer.write('Looong filename!')
