@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import shutil
 import sys
 import unittest
 from os import path as op
@@ -16,10 +17,7 @@ class TestNormal(unittest.TestCase):
         self._create_tree(self.file)
 
     def tearDown(self):
-        try:
-            os.remove(self.dirname)
-        except OSError:
-            pass
+        shutil.rmtree(self.dirname, ignore_errors=True)
 
     def _create_tree(self, path):
         dirname = op.dirname(path)
@@ -50,10 +48,7 @@ class TestLongPath(unittest.TestCase):
         self._create_tree(self.file)
 
     def tearDown(self):
-        try:
-            os.remove(self.dirname)
-        except OSError:
-            pass
+        shutil.rmtree(self.dirname, ignore_errors=True)
 
     def _create_tree(self, path):
         dirname = op.dirname(path)
