@@ -22,6 +22,7 @@ import os
 import os.path as op
 from datetime import datetime
 import stat
+import shutil
 try:
     from urllib.parse import quote
 except ImportError:
@@ -100,7 +101,7 @@ def trash_move(src, dst, topdir=None):
     check_create(filespath)
     check_create(infopath)
 
-    os.rename(src, op.join(filespath, destname))
+    shutil.move(src, op.join(filespath, destname))
     f = open(op.join(infopath, destname + INFO_SUFFIX), 'w')
     f.write(info_for(src, topdir))
     f.close()
