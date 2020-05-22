@@ -25,6 +25,8 @@ try:
         ]
         # convert to full paths
         path = [op.abspath(item) if not op.isabs(item) else item for item in path]
+        # remove the leading \\?\ if present
+        path = [item[4:] for item in path if item.startswith("\\\\?\\")]
         # create instance of file operation object
         fileop = pythoncom.CoCreateInstance(
             shell.CLSID_FileOperation,
