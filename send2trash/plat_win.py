@@ -7,72 +7,80 @@
 from __future__ import unicode_literals
 import os.path as op
 from .compat import text_type
+from platform import version
 
-try:
-    # Attempt to use pywin32 to use IFileOperation
-    import pythoncom
-    import pywintypes
-    from win32com.shell import shell, shellcon
-    from platform import version
+legacy = False
+# if windows is vista or newer and pywin32 is available use IFileOperation
+if int(version().split(".", 1)[0]) >= 6:
+    try:
+        # Attempt to use pywin32 to use IFileOperation
+        import pythoncom
+        import pywintypes
+        from win32com.shell import shell, shellcon
 
-    def send2trash(path):
-        if not isinstance(path, list):
-            path = [path]
-        # convert data type
-        path = [
-            text_type(item, "mbcs") if not isinstance(item, text_type) else item
-            for item in path
-        ]
-        # convert to full paths
-        path = [op.abspath(item) if not op.isabs(item) else item for item in path]
-        # remove the leading \\?\ if present
-        path = [item[4:] for item in path if item.startswith("\\\\?\\")]
-        # create instance of file operation object
-        fileop = pythoncom.CoCreateInstance(
-            shell.CLSID_FileOperation,
-            None,
-            pythoncom.CLSCTX_ALL,
-            shell.IID_IFileOperation,
-        )
-        # default flags to use
-        flags = (
-            shellcon.FOF_NOCONFIRMATION
-            | shellcon.FOF_NOERRORUI
-            | shellcon.FOF_SILENT
-            | shellcon.FOFX_EARLYFAILURE
-        )
-        # determine rest of the flags based on OS version
-        # use newer recommended flags if available
-        if int(version().split(".", 1)[0]) >= 8 and False:
-            flags |= (
-                0x20000000  # FOFX_ADDUNDORECORD win 8+
-                | 0x00080000  # FOFX_RECYCLEONDELETE win 8+
+        def send2trash(path):
+            if not isinstance(path, list):
+                path = [path]
+            # convert data type
+            path = [
+                text_type(item, "mbcs") if not isinstance(item, text_type) else item
+                for item in path
+            ]
+            # convert to full paths
+            path = [op.abspath(item) if not op.isabs(item) else item for item in path]
+            # remove the leading \\?\ if present
+            path = [item[4:] if item.startswith("\\\\?\\") else item for item in path]
+            # create instance of file operation object
+            fileop = pythoncom.CoCreateInstance(
+                shell.CLSID_FileOperation,
+                None,
+                pythoncom.CLSCTX_ALL,
+                shell.IID_IFileOperation,
             )
-        else:
-            flags |= shellcon.FOF_ALLOWUNDO
-        # set the flags
-        fileop.SetOperationFlags(flags)
-        # actually try to perform the operation, this section may throw a
-        # pywintypes.com_error which does not seem to create as nice of an
-        # error as OSError so wrapping with try to convert
-        try:
-            for itemPath in path:
-                item = shell.SHCreateItemFromParsingName(
-                    itemPath, None, shell.IID_IShellItem
+            # default flags to use
+            flags = (
+                shellcon.FOF_NOCONFIRMATION
+                | shellcon.FOF_NOERRORUI
+                | shellcon.FOF_SILENT
+                | shellcon.FOFX_EARLYFAILURE
+            )
+            # determine rest of the flags based on OS version
+            # use newer recommended flags if available
+            if int(version().split(".", 1)[0]) >= 8:
+                flags |= (
+                    0x20000000  # FOFX_ADDUNDORECORD win 8+
+                    | 0x00080000  # FOFX_RECYCLEONDELETE win 8+
                 )
-                fileop.DeleteItem(item)
-            result = fileop.PerformOperations()
-            aborted = fileop.GetAnyOperationsAborted()
-            # if non-zero result or aborted throw an exception
-            if result or aborted:
-                raise OSError(None, None, path, result)
-        except pywintypes.com_error as error:
-            # convert to standard OS error, allows other code to get a
-            # normal errno
-            raise OSError(None, error.strerror, path, error.hresult)
+            else:
+                flags |= shellcon.FOF_ALLOWUNDO
+            # set the flags
+            fileop.SetOperationFlags(flags)
+            # actually try to perform the operation, this section may throw a
+            # pywintypes.com_error which does not seem to create as nice of an
+            # error as OSError so wrapping with try to convert
+            try:
+                for itemPath in path:
+                    item = shell.SHCreateItemFromParsingName(
+                        itemPath, None, shell.IID_IShellItem
+                    )
+                    fileop.DeleteItem(item)
+                result = fileop.PerformOperations()
+                aborted = fileop.GetAnyOperationsAborted()
+                # if non-zero result or aborted throw an exception
+                if result or aborted:
+                    raise OSError(None, None, path, result)
+            except pywintypes.com_error as error:
+                # convert to standard OS error, allows other code to get a
+                # normal errno
+                raise OSError(None, error.strerror, path, error.hresult)
 
+    except ImportError:
+        legacy = True
+else:
+    legacy = True
 
-except ImportError:
+# use SHFileOperation as fallback
+if legacy:
     from ctypes import (
         windll,
         Structure,
@@ -128,11 +136,19 @@ except ImportError:
         return output.value[4:]  # Remove '\\?\' for SHFileOperationW
 
     def send2trash(path):
-        if not isinstance(path, text_type):
-            path = text_type(path, "mbcs")
-        if not op.isabs(path):
-            path = op.abspath(path)
-        path = get_short_path_name(path)
+        if not isinstance(path, list):
+            path = [path]
+        # convert data type
+        path = [
+            text_type(item, "mbcs") if not isinstance(item, text_type) else item
+            for item in path
+        ]
+        # convert to full paths
+        path = [op.abspath(item) if not op.isabs(item) else item for item in path]
+        # get short path to handle path length issues
+        path = [get_short_path_name(item) for item in path]
+        # convert to a single string of null terminated paths
+        path = "\0".join(path)
         fileop = SHFILEOPSTRUCTW()
         fileop.hwnd = 0
         fileop.wFunc = FO_DELETE
