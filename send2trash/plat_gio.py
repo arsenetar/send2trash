@@ -7,13 +7,17 @@
 from gi.repository import GObject, Gio
 from .exceptions import TrashPermissionError
 
-def send2trash(path):
-    try:
-        f = Gio.File.new_for_path(path)
-        f.trash(cancellable=None)
-    except GObject.GError as e:
-        if e.code == Gio.IOErrorEnum.NOT_SUPPORTED:
-            # We get here if we can't create a trash directory on the same
-            # device. I don't know if other errors can result in NOT_SUPPORTED.
-            raise TrashPermissionError('')
-        raise OSError(e.message)
+
+def send2trash(paths):
+    if not isinstance(paths, list):
+        paths = [paths]
+    for path in paths:
+        try:
+            f = Gio.File.new_for_path(path)
+            f.trash(cancellable=None)
+        except GObject.GError as e:
+            if e.code == Gio.IOErrorEnum.NOT_SUPPORTED:
+                # We get here if we can't create a trash directory on the same
+                # device. I don't know if other errors can result in NOT_SUPPORTED.
+                raise TrashPermissionError("")
+            raise OSError(e.message)
