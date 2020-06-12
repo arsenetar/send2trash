@@ -8,6 +8,10 @@ from tempfile import gettempdir
 
 from send2trash import send2trash as s2t
 
+# import the two versions as well as the "automatic" version
+from send2trash.plat_win_modern import send2trash as s2t_modern
+from send2trash.plat_win_legacy import send2trash as s2t_legacy
+
 
 @unittest.skipIf(sys.platform != "win32", "Windows only")
 class TestNormal(unittest.TestCase):
@@ -30,22 +34,50 @@ class TestNormal(unittest.TestCase):
         with open(path, "w") as writer:
             writer.write("send2trash test")
 
-    def test_trash_file(self):
-        s2t(self.file)
+    def _trash_file(self, fcn):
+        fcn(self.file)
         self.assertFalse(op.exists(self.file))
 
-    def test_trash_multifile(self):
-        s2t(self.files)
+    def _trash_multifile(self, fcn):
+        fcn(self.files)
         self.assertFalse(any([op.exists(file) for file in self.files]))
 
-    def test_file_not_found(self):
+    def _file_not_found(self, fcn):
         file = op.join(self.dirname, "otherfile.txt")
-        self.assertRaises(WindowsError, s2t, file)
+        self.assertRaises(WindowsError, fcn, file)
+
+    def test_trash_file(self):
+        self._trash_file(s2t)
+
+    def test_trash_multifile(self):
+        self._trash_multifile(s2t)
+
+    def test_file_not_found(self):
+        self._file_not_found(s2t)
+
+    def test_trash_file_modern(self):
+        self._trash_file(s2t_modern)
+
+    def test_trash_multifile_modern(self):
+        self._trash_multifile(s2t_modern)
+
+    def test_file_not_found_modern(self):
+        self._file_not_found(s2t_modern)
+
+    def test_trash_file_legacy(self):
+        self._trash_file(s2t_legacy)
+
+    def test_trash_multifile_legacy(self):
+        self._trash_multifile(s2t_legacy)
+
+    def test_file_not_found_legacy(self):
+        self._file_not_found(s2t_legacy)
 
 
 @unittest.skipIf(sys.platform != "win32", "Windows only")
 class TestLongPath(unittest.TestCase):
     def setUp(self):
+        self.functions = {s2t: "auto", s2t_legacy: "legacy", s2t_modern: "modern"}
         filename = "A" * 100
         self.dirname = "\\\\?\\" + op.join(gettempdir(), filename)
         path = op.join(
@@ -70,18 +102,53 @@ class TestLongPath(unittest.TestCase):
         with open(path, "w") as writer:
             writer.write("Looong filename!")
 
-    def test_trash_file(self):
-        s2t(self.file)
+    def _trash_file(self, fcn):
+        fcn(self.file)
         self.assertFalse(op.exists(self.file))
 
-    def test_trash_multifile(self):
-        s2t(self.files)
+    def _trash_multifile(self, fcn):
+        fcn(self.files)
         self.assertFalse(any([op.exists(file) for file in self.files]))
+
+    def _trash_folder(self, fcn):
+        fcn(self.dirname)
+        self.assertFalse(op.exists(self.dirname))
+
+    def test_trash_file(self):
+        self._trash_file(s2t)
+
+    def test_trash_multifile(self):
+        self._trash_multifile(s2t)
 
     @unittest.skipIf(
         op.splitdrive(os.getcwd())[0] != op.splitdrive(gettempdir())[0],
         "Cannot trash long path from other drive",
     )
     def test_trash_folder(self):
-        s2t(self.dirname)
-        self.assertFalse(op.exists(self.dirname))
+        self._trash_folder(s2t)
+
+    def test_trash_file_modern(self):
+        self._trash_file(s2t_modern)
+
+    def test_trash_multifile_modern(self):
+        self._trash_multifile(s2t_modern)
+
+    @unittest.skipIf(
+        op.splitdrive(os.getcwd())[0] != op.splitdrive(gettempdir())[0],
+        "Cannot trash long path from other drive",
+    )
+    def test_trash_folder_modern(self):
+        self._trash_folder(s2t_modern)
+
+    def test_trash_file_legacy(self):
+        self._trash_file(s2t_legacy)
+
+    def test_trash_multifile_legacy(self):
+        self._trash_multifile(s2t_legacy)
+
+    @unittest.skipIf(
+        op.splitdrive(os.getcwd())[0] != op.splitdrive(gettempdir())[0],
+        "Cannot trash long path from other drive",
+    )
+    def test_trash_folder_legacy(self):
+        self._trash_folder(s2t_legacy)
