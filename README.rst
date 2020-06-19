@@ -3,36 +3,21 @@ Send2Trash -- Send files to trash on all platforms
 ==================================================
 
 Send2Trash is a small package that sends files to the Trash (or Recycle Bin) *natively* and on
-*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls, on Windows, it
-uses native (and ugly) ``SHFileOperation`` win32 calls. On other platforms, if `PyGObject`_ and
-`GIO`_ are available, it will use this.  Otherwise, it will fallback to its own implementation
-of the `trash specifications from freedesktop.org`_.
+*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls. On Windows, it
+uses native ``IFileOperation`` call if on Vista or newer and pywin32 is installed or falls back 
+to ``SHFileOperation`` calls. On other platforms, if `PyGObject`_ and `GIO`_ are available, it 
+will use this.  Otherwise, it will fallback to its own implementation of the `trash specifications 
+from freedesktop.org`_.
 
 ``ctypes`` is used to access native libraries, so no compilation is necessary.
 
 Send2Trash supports Python 2.7 and up (Python 3 is supported).
 
-Status: Maintainer needed
--------------------------
+Status: Additional Help Welcome
+-------------------------------
 
-I haven't had access to a Windows or MacOS environment for years now. I don't
-care for those platforms as much as I used to. I also don't use this library
-any more.
-
-This is the most popular library I've authored and many people and projects
-rely on it. I don't intend on letting it go broken. I am, however, wanting to
-get rid of its maintainership burden.
-
-It's not a big burden, but without access to Windows or MacOS, it can make
-reviewing PRs a but tricky: I have to blind-merge them. That makes me a rather
-bad maintainer for this library. So, for the good of the project, it should be
-someone else.
-
-However, being a relatively popular library makes this task a little tricky.
-As we've seen in the NPM world recently, it has security implications.
-Therefore, I don't intend on passing this to anyone. If you have some clout or
-if I can otherwise have confidence that you'll handle the library responsibly,
-then please contact me and I'll gladly pass this on.
+Additional help is welcome for supporting this package.  Specifically help with the OSX and Linux 
+issues and fixes would be most appreciated.
 
 Installation
 ------------
@@ -41,7 +26,7 @@ You can download it with pip::
 
     pip install Send2Trash
 
-or you can download the source from http://github.com/hsoft/send2trash and install it with::
+or you can download the source from http://github.com/arsenetar/send2trash and install it with::
 
     >>> python setup.py install
 
@@ -50,6 +35,7 @@ Usage
 
 >>> from send2trash import send2trash
 >>> send2trash('some_file')
+>>> send2trash(['some_file1', 'some_file2'])
 
 On Freedesktop platforms (Linux, BSD, etc.), you may not be able to efficiently
 trash some files. In these cases, an exception ``send2trash.TrashPermissionError``

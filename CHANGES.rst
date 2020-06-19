@@ -1,6 +1,15 @@
 Changes
 =======
 
+Version 1.6.0b1 -- 2020/06/18
+-----------------------------
+
+* Add main method which allows calling via ``python -m send2trash somefile``
+* Windows: Add support for using IFileOperation when pywin32 is present on Vista and newer
+* Add support for passing multiple files at once in a list
+* Windows: Batch multi-file calls to improve performance (#42)
+* Windows: Fix issue with SHFileOperation failing silently when path is not found (#33)
+
 Version 1.5.0 -- 2018/02/16
 ---------------------------
 
