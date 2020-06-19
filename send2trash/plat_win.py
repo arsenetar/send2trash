@@ -17,4 +17,4 @@ if int(version().split(".", 1)[0]) >= 6:
         from .plat_win_legacy import send2trash
 else:
     # use SHFileOperation as fallback
-    from .plat_win_legacy import send2trash
+    from .plat_win_legacy import send2trash  # noqa: F401
