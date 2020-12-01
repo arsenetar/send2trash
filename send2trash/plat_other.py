@@ -112,9 +112,8 @@ def trash_move(src, dst, topdir=None):
     check_create(infopath)
 
     os.rename(src, op.join(filespath, destname))
-    f = open(op.join(infopath, destname + INFO_SUFFIX), "w")
-    f.write(info_for(src, topdir))
-    f.close()
+    with open(op.join(infopath, destname + INFO_SUFFIX), "w") as f:
+        f.write(info_for(src, topdir))
 
 
 def find_mount_point(path):
