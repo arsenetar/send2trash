@@ -20,6 +20,16 @@ matrix:
     # Obtain Python 3.7 from xenial as per https://github.com/travis-ci/travis-ci/issues/9815
     - python: "3.7"
       dist: xenial
+
+    - python: "2.7"
+      arch: ppc64le
+    - python: "3.6"
+      arch: ppc64le
+    # Obtain Python 3.7 from xenial as per https://github.com/travis-ci/travis-ci/issues/9815
+    - python: "3.7"
+      dist: xenial
+    - python: "3.8"
+      dist: bionic
 install:
   - pip install tox
 before_script:
