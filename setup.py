@@ -37,4 +37,5 @@ setup(
     classifiers=CLASSIFIERS,
     extras_require={"win32": ["pywin32"]},
     project_urls={"Bug Reports": "https://github.com/arsenetar/send2trash/issues"},
+    entry_points={"console_scripts": ["send2trash=send2trash.__main__:main"]},
 )
