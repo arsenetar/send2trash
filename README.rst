@@ -24,7 +24,7 @@ Installation
 
 You can download it with pip::
 
-    pip install Send2Trash
+    python -m pip install -U send2trash
 
 or you can download the source from http://github.com/arsenetar/send2trash and install it with::
 
