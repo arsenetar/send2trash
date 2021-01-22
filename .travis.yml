@@ -23,6 +23,11 @@ matrix:
     - python: "nightly"  # 3.10
       before_script:
         - export TOXENV=py310
+    - python: "2.7"
+      arch: ppc64le
+    - python: "3.6"
+      arch: ppc64le
+        
 install:
   - python -m pip install tox
 before_script:
