@@ -14,12 +14,13 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Topic :: Desktop Environment :: File Managers",
 ]
 
-LONG_DESCRIPTION = (
-    open("README.rst", "rt").read() + "\n\n" + open("CHANGES.rst", "rt").read()
-)
+with open("README.rst", "rt") as f1, open("CHANGES.rst", "rt") as f2:
+    LONG_DESCRIPTION = f1.read() + "\n\n" + f2.read()
 
 setup(
     name="Send2Trash",
@@ -36,4 +37,5 @@ setup(
     classifiers=CLASSIFIERS,
     extras_require={"win32": ["pywin32"]},
     project_urls={"Bug Reports": "https://github.com/arsenetar/send2trash/issues"},
+    entry_points={"console_scripts": ["send2trash=send2trash.__main__:main"]},
 )

@@ -17,12 +17,15 @@ matrix:
     - python: "3.4"
     - python: "3.5"
     - python: "3.6"
-    # Obtain Python 3.7 from xenial as per https://github.com/travis-ci/travis-ci/issues/9815
     - python: "3.7"
-      dist: xenial
+    - python: "3.8"
+    - python: "3.9"
+    - python: "nightly"  # 3.10
+      before_script:
+        - export TOXENV=py310
 install:
-  - pip install tox
+  - python -m pip install tox
 before_script:
   - export TOXENV=$(echo py$TRAVIS_PYTHON_VERSION | tr -d .)
 script:
-  - tox
+  - python -m tox
