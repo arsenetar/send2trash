@@ -9,8 +9,9 @@ from tempfile import gettempdir
 from send2trash import send2trash as s2t
 
 # import the two versions as well as the "automatic" version
-from send2trash.plat_win_modern import send2trash as s2t_modern
-from send2trash.plat_win_legacy import send2trash as s2t_legacy
+if sys.platform == "win32":
+    from send2trash.plat_win_modern import send2trash as s2t_modern
+    from send2trash.plat_win_legacy import send2trash as s2t_legacy
 
 
 @unittest.skipIf(sys.platform != "win32", "Windows only")
