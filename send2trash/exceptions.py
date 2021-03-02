@@ -2,7 +2,7 @@ import errno
 from .compat import PY3
 
 if PY3:
-    _permission_error = PermissionError
+    _permission_error = PermissionError  # noqa: F821
 else:
     _permission_error = OSError
 
