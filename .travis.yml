@@ -3,16 +3,14 @@ matrix:
   include:
     - os: windows
       language: sh
-      python: 3
+      python: "3.8"
+      env: "PATH="/c/Python:/c/Python/Scripts:$PATH""
       # Perform the manual steps on windows to install python3
       before_install:
-        - choco install python3 --params "/InstallDir:C:\Python"
-        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
+        - choco install python --version=3.8.6
         - python -m pip install --upgrade pip
-        - python -m pip install pywin32
       before_script:
-        - export TOXENV=py3-win
-
+        - export TOXENV=py38
     - python: "2.7"
     - python: "3.4"
     - python: "3.5"
