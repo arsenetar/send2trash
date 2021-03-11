@@ -77,8 +77,6 @@ def send2trash(paths):
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # get short path to handle path length issues
     paths = [get_short_path_name(path) for path in paths]
-    # convert to a single string of null terminated paths
-    paths = "\0".join(paths)
     fileop = SHFILEOPSTRUCTW()
     fileop.hwnd = 0
     fileop.wFunc = FO_DELETE
@@ -93,7 +91,15 @@ def send2trash(paths):
     # NOTE: based on how python allocates memory for these types they should
     # always be zero, if this is ever not true we can go back to explicitly
     # setting the last two characters to null using buffer[index] = '\0'.
-    buffer = create_unicode_buffer(paths, len(paths) + 2)
+    # Additional note on another issue here, unicode_buffer expects length in
+    # bytes essentially, so having multi-byte characters causes issues if just
+    # passing pythons string length.  Instead of dealing with this difference we
+    # just create a buffer then a new one with an extra null.  Since the non-length
+    # specified version apparently stops after the first null, join with a space first.
+    buffer = create_unicode_buffer(" ".join(paths))
+    # convert to a single string of null terminated paths
+    path_string = "\0".join(paths)
+    buffer = create_unicode_buffer(path_string, len(buffer) + 1)
     fileop.pFrom = LPCWSTR(addressof(buffer))
     fileop.pTo = None
     fileop.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT

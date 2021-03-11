@@ -66,6 +66,17 @@ def _file_not_found(dir, fcn):
     pytest.raises(OSError, fcn, file)
 
 
+def _multi_byte_unicode(dir, fcn):
+    file = op.join(dir, "😇.txt")
+    _create_tree(file)
+    fcn(file)
+    assert op.exists(file) is False
+    files = [op.join(dir, "😇{}.txt".format(index)) for index in range(10)]
+    [_create_tree(file) for file in files]
+    fcn(files)
+    assert any([op.exists(file) for file in files]) is False
+
+
 def test_trash_folder(testdir):
     _trash_folder(testdir, s2t)
 
@@ -98,6 +109,10 @@ def test_file_not_found_modern(testdir):
     _file_not_found(testdir, s2t_modern)
 
 
+def test_multi_byte_unicode_modern(testdir):
+    _multi_byte_unicode(testdir, s2t_modern)
+
+
 def test_trash_folder_legacy(testdir):
     _trash_folder(testdir, s2t_legacy)
 
@@ -112,6 +127,10 @@ def test_trash_multifile_legacy(testfiles):
 
 def test_file_not_found_legacy(testdir):
     _file_not_found(testdir, s2t_legacy)
+
+
+def test_multi_byte_unicode_legacy(testdir):
+    _multi_byte_unicode(testdir, s2t_legacy)
 
 
 # Long path tests
