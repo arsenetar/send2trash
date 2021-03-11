@@ -63,7 +63,7 @@ def _trash_multifile(files, fcn):
 
 def _file_not_found(dir, fcn):
     file = op.join(dir, "otherfile.txt")
-    pytest.raises(WindowsError, fcn, file)
+    pytest.raises(OSError, fcn, file)
 
 
 def test_trash_folder(testdir):
