@@ -26,6 +26,7 @@ def _create_tree(path):
 @pytest.fixture
 def testdir(tmp_path):
     dirname = "\\\\?\\" + str(tmp_path)
+    assert op.exists(dirname) is True
     yield dirname
     shutil.rmtree(dirname, ignore_errors=True)
 
@@ -34,6 +35,7 @@ def testdir(tmp_path):
 def testfile(testdir):
     file = op.join(testdir, "testfile.txt")
     _create_tree(file)
+    assert op.exists(file) is True
     yield file
     # Note dir will cleanup the file
 
@@ -42,6 +44,7 @@ def testfile(testdir):
 def testfiles(testdir):
     files = [op.join(testdir, "testfile{}.txt".format(index)) for index in range(10)]
     [_create_tree(file) for file in files]
+    assert all([op.exists(file) for file in files]) is True
     yield files
     # Note dir will cleanup the files
 
@@ -148,6 +151,7 @@ def longfile(longdir):
     path = op.join(longdir, name + "{}.txt")
     file = path.format("")
     _create_tree(file)
+    assert op.exists(file) is True
     yield file
 
 
@@ -157,11 +161,14 @@ def longfiles(longdir):
     path = op.join(longdir, name + "{}.txt")
     files = [path.format(index) for index in range(10)]
     [_create_tree(file) for file in files]
+    assert all([op.exists(file) for file in files]) is True
     yield files
 
 
-# NOTE: both legacy and modern test "pass" on windows, but actually are not moving files to the
-# recycle bin, this was tested on latest windows 10, thought to have worked previously
+# NOTE: both legacy and modern test "pass" on windows, however sometimes with the same path
+# they do not actually recycle files but delete them.  Noticed this when testing with the
+# recycle bin open, noticed later tests actually worked, modern version can actually detect
+# when this happens but not stop it at this moment, and we need a way to verify it when testing.
 def test_trash_long_file_modern(longfile):
     _trash_file(longfile, s2t_modern)
 

@@ -32,6 +32,7 @@ def testfile():
         dir=op.expanduser("~"), prefix="send2trash_test", delete=False
     )
     file.close()
+    assert op.exists(file) is True
     yield file
     # Cleanup trash files on supported platforms
     if sys.platform != "win32":
@@ -57,6 +58,7 @@ def testfiles():
         )
     )
     [file.close() for file in files]
+    assert all([op.exists(file) for file in files]) is True
     yield files
     filenames = [op.basename(file.name) for file in files]
     [os.remove(op.join(HOMETRASH, "files", filename)) for filename in filenames]
@@ -93,6 +95,7 @@ def testUnicodefile():
     name = u"send2trash_tést1"
     file = op.join(op.expanduser(b"~"), name.encode("utf-8"))
     touch(file)
+    assert op.exists(file) is True
     yield file
     # Cleanup trash files on supported platforms
     if sys.platform != "win32":
@@ -158,6 +161,7 @@ def testExtVol():
     fileName = "test.txt"
     filePath = op.join(volume.trashTopdir, fileName)
     touch(filePath)
+    assert op.exists(filePath) is True
     yield volume, fileName, filePath
     volume.cleanup()
 

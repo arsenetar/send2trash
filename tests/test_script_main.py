@@ -18,6 +18,8 @@ def file():
         dir=op.expanduser("~"), prefix="send2trash_test", delete=False
     )
     file.close()
+    # Verify file was actually created
+    assert op.exists(file.name) is True
     yield file.name
     # Cleanup trash files on supported platforms
     if sys.platform != "win32":
