@@ -32,7 +32,7 @@ def testfile():
         dir=op.expanduser("~"), prefix="send2trash_test", delete=False
     )
     file.close()
-    assert op.exists(file) is True
+    assert op.exists(file.name) is True
     yield file
     # Cleanup trash files on supported platforms
     if sys.platform != "win32":
@@ -58,7 +58,7 @@ def testfiles():
         )
     )
     [file.close() for file in files]
-    assert all([op.exists(file) for file in files]) is True
+    assert all([op.exists(file.name) for file in files]) is True
     yield files
     filenames = [op.basename(file.name) for file in files]
     [os.remove(op.join(HOMETRASH, "files", filename)) for filename in filenames]

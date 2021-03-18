@@ -70,12 +70,14 @@ def _file_not_found(dir, fcn):
 
 
 def _multi_byte_unicode(dir, fcn):
-    file = op.join(dir, "😇.txt")
-    _create_tree(file)
-    fcn(file)
-    assert op.exists(file) is False
+    single_file = op.join(dir, "😇.txt")
+    _create_tree(single_file)
+    assert op.exists(single_file) is True
+    fcn(single_file)
+    assert op.exists(single_file) is False
     files = [op.join(dir, "😇{}.txt".format(index)) for index in range(10)]
     [_create_tree(file) for file in files]
+    assert all([op.exists(file) for file in files]) is True
     fcn(files)
     assert any([op.exists(file) for file in files]) is False
 
