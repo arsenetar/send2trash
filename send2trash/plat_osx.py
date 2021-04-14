@@ -4,53 +4,17 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
-from __future__ import unicode_literals
+from platform import mac_ver
+from sys import version_info
 
-from ctypes import cdll, byref, Structure, c_char, c_char_p
-from ctypes.util import find_library
-
-from .compat import binary_type
-
-Foundation = cdll.LoadLibrary(find_library("Foundation"))
-CoreServices = cdll.LoadLibrary(find_library("CoreServices"))
-
-GetMacOSStatusCommentString = Foundation.GetMacOSStatusCommentString
-GetMacOSStatusCommentString.restype = c_char_p
-FSPathMakeRefWithOptions = CoreServices.FSPathMakeRefWithOptions
-FSMoveObjectToTrashSync = CoreServices.FSMoveObjectToTrashSync
-
-kFSPathMakeRefDefaultOptions = 0
-kFSPathMakeRefDoNotFollowLeafSymlink = 0x01
-
-kFSFileOperationDefaultOptions = 0
-kFSFileOperationOverwrite = 0x01
-kFSFileOperationSkipSourcePermissionErrors = 0x02
-kFSFileOperationDoNotMoveAcrossVolumes = 0x04
-kFSFileOperationSkipPreflight = 0x08
-
-
-class FSRef(Structure):
-    _fields_ = [("hidden", c_char * 80)]
-
-
-def check_op_result(op_result):
-    if op_result:
-        msg = GetMacOSStatusCommentString(op_result).decode("utf-8")
-        raise OSError(msg)
-
-
-def send2trash(paths):
-    if not isinstance(paths, list):
-        paths = [paths]
-    paths = [
-        path.encode("utf-8") if not isinstance(path, binary_type) else path
-        for path in paths
-    ]
-    for path in paths:
-        fp = FSRef()
-        opts = kFSPathMakeRefDoNotFollowLeafSymlink
-        op_result = FSPathMakeRefWithOptions(path, opts, byref(fp), None)
-        check_op_result(op_result)
-        opts = kFSFileOperationDefaultOptions
-        op_result = FSMoveObjectToTrashSync(byref(fp), None, opts)
-        check_op_result(op_result)
+# If macOS is 11.0 or newer try to use the pyobjc version to get around #51
+# NOTE: pyobjc only supports python >= 3.6
+if version_info >= (3, 6) and int(mac_ver()[0].split(".", 1)[0]) >= 11:
+    try:
+        from .plat_osx_pyobjc import send2trash
+    except ImportError:
+        # Try to fall back to ctypes version, although likely problematic still
+        from .plat_osx_ctypes import send2trash
+else:
+    # Just use the old version otherwise
+    from .plat_osx_ctypes import send2trash  # noqa: F401
