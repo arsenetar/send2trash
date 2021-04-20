@@ -1,6 +1,16 @@
 Changes
 =======
 
+Version 1.7.0a -- 2020/04/20
+----------------------------
+* Add console_script entry point (#50)
+* Increased python CI versions (#52, #54)
+* Fix minor issue in setup.py (#53)
+* Fix issue with windows tests importing modules on non-windows (#55)
+* Unit test cleanups, rewrites, and flake8 cleanups
+* Windows: Fix legacy windows platform for multi-byte unicode and add tests
+* macOS: Add alternative pyobjc version to potentially improve compatibility (#51)
+
 Version 1.6.0b1 -- 2020/06/18
 -----------------------------
 
