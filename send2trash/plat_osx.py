@@ -7,9 +7,9 @@
 from platform import mac_ver
 from sys import version_info
 
-# If macOS is 11.0 or newer try to use the pyobjc version to get around #51
-# NOTE: pyobjc only supports python >= 3.6
-if version_info >= (3, 6) and int(mac_ver()[0].split(".", 1)[0]) >= 11:
+# NOTE: version of pyobjc only supports python >= 3.6 and 10.9+
+macos_ver = tuple(int(part) for part in mac_ver()[0].split("."))
+if version_info >= (3, 6) and macos_ver >= (10, 9):
     try:
         from .plat_osx_pyobjc import send2trash
     except ImportError:
