@@ -1,8 +1,19 @@
 Changes
 =======
-
-Version 1.7.0a -- 2020/04/20
+Version 1.7.1 -- 2021/06/21
 ----------------------------
+
+* Release stable version with changes from last 3 releases
+* Fix handling of UNC names (#57)
+
+Version 1.7.0a1 -- 2021/05/14
+----------------------------
+
+* Changed conditional for when to try to use pyobjc version (#51)
+
+Version 1.7.0a0 -- 2021/04/20
+----------------------------
+
 * Add console_script entry point (#50)
 * Increased python CI versions (#52, #54)
 * Fix minor issue in setup.py (#53)

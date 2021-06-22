@@ -24,7 +24,7 @@ with open("README.rst", "rt") as f1, open("CHANGES.rst", "rt") as f2:
 
 setup(
     name="Send2Trash",
-    version="1.7.0a1",
+    version="1.7.1",
     author="Andrew Senetar",
     author_email="arsenetar@voltaicideas.net",
     packages=["send2trash"],
