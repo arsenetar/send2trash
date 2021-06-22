@@ -51,18 +51,53 @@ FOF_ALLOWUNDO = 64
 FOF_NOERRORUI = 1024
 
 
+def prefix_and_path(path):
+    r"""Guess the long-path prefix based on the kind of *path*.
+    Local paths (C:\folder\file.ext) and UNC names (\\server\folder\file.ext)
+    are handled.
+
+    Return a tuple of the long-path prefix and the prefixed path.
+    """
+    prefix, long_path = "\\\\?\\", path
+
+    if not path.startswith(prefix):
+        if path.startswith("\\\\"):
+            # Likely a UNC name
+            prefix = "\\\\?\\UNC"
+            long_path = prefix + path[1:]
+        else:
+            # Likely a local path
+            long_path = prefix + path
+    elif path.startswith(prefix + "UNC\\"):
+        # UNC name with long-path prefix
+        prefix = "\\\\?\\UNC"
+
+    return prefix, long_path
+
+
+def get_awaited_path_from_prefix(prefix, path):
+    """Guess the correct path to pass to the SHFileOperationW() call.
+    The long-path prefix must be removed, so we should take care of
+    different long-path prefixes.
+    """
+    if prefix == "\\\\?\\UNC":
+        # We need to prepend a backslash for UNC names, as it was removed
+        # in prefix_and_path().
+        return "\\" + path[len(prefix) :]
+    return path[len(prefix) :]
+
+
 def get_short_path_name(long_name):
-    if not long_name.startswith("\\\\?\\"):
-        long_name = "\\\\?\\" + long_name
-    buf_size = GetShortPathNameW(long_name, None, 0)
+    prefix, long_path = prefix_and_path(long_name)
+    buf_size = GetShortPathNameW(long_path, None, 0)
     # FIX: https://github.com/hsoft/send2trash/issues/31
     # If buffer size is zero, an error has occurred.
     if not buf_size:
         err_no = GetLastError()
-        raise WindowsError(err_no, FormatError(err_no), long_name[4:])
+        raise WindowsError(err_no, FormatError(err_no), long_path)
     output = create_unicode_buffer(buf_size)
-    GetShortPathNameW(long_name, output, buf_size)
-    return output.value[4:]  # Remove '\\?\' for SHFileOperationW
+    GetShortPathNameW(long_path, output, buf_size)
+    return get_awaited_path_from_prefix(prefix, output.value)
 
 
 def send2trash(paths):
