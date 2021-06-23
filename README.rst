@@ -3,11 +3,11 @@ Send2Trash -- Send files to trash on all platforms
 ==================================================
 
 Send2Trash is a small package that sends files to the Trash (or Recycle Bin) *natively* and on
-*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls. On Windows, it
-uses native ``IFileOperation`` call if on Vista or newer and pywin32 is installed or falls back 
-to ``SHFileOperation`` calls. On other platforms, if `PyGObject`_ and `GIO`_ are available, it 
-will use this.  Otherwise, it will fallback to its own implementation of the `trash specifications 
-from freedesktop.org`_.
+*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls or can use pyobjc 
+with NSFileManager. On Windows, it uses native ``IFileOperation`` call if on Vista or newer and 
+pywin32 is installed or falls back to ``SHFileOperation`` calls. On other platforms, if `PyGObject`_ 
+and `GIO`_ are available, it will use this.  Otherwise, it will fallback to its own implementation of 
+the `trash specifications from freedesktop.org`_.
 
 ``ctypes`` is used to access native libraries, so no compilation is necessary.
 
