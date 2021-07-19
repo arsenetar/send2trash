@@ -13,6 +13,8 @@ import pywintypes
 from win32com.shell import shell, shellcon
 from .IFileOperationProgressSink import CreateSink
 
+pythoncom.CoInitialize()
+
 
 def send2trash(paths):
     if not isinstance(paths, list):
