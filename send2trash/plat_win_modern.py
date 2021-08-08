@@ -7,6 +7,7 @@
 from __future__ import unicode_literals
 import os.path as op
 from .compat import text_type
+from .util import preprocess_paths
 from platform import version
 import pythoncom
 import pywintypes
@@ -15,8 +16,7 @@ from .IFileOperationProgressSink import CreateSink
 
 
 def send2trash(paths):
-    if not isinstance(paths, list):
-        paths = [paths]
+    paths = preprocess_paths(paths)
     # convert data type
     paths = [
         text_type(path, "mbcs") if not isinstance(path, text_type) else path

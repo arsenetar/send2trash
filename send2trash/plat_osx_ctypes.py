@@ -10,6 +10,7 @@ from ctypes import cdll, byref, Structure, c_char, c_char_p
 from ctypes.util import find_library
 
 from .compat import binary_type
+from .util import preprocess_paths
 
 Foundation = cdll.LoadLibrary(find_library("Foundation"))
 CoreServices = cdll.LoadLibrary(find_library("CoreServices"))
@@ -40,8 +41,7 @@ def check_op_result(op_result):
 
 
 def send2trash(paths):
-    if not isinstance(paths, list):
-        paths = [paths]
+    paths = preprocess_paths(paths)
     paths = [
         path.encode("utf-8") if not isinstance(path, binary_type) else path
         for path in paths

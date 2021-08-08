@@ -30,6 +30,7 @@ except ImportError:
     from urllib import quote
 
 from .compat import text_type, environb
+from .util import preprocess_paths
 from .exceptions import TrashPermissionError
 
 try:
@@ -172,8 +173,7 @@ def get_dev(path):
 
 
 def send2trash(paths):
-    if not isinstance(paths, list):
-        paths = [paths]
+    paths = preprocess_paths(paths)
     for path in paths:
         if isinstance(path, text_type):
             path_b = fsencode(path)

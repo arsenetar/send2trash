@@ -6,6 +6,7 @@
 
 from Foundation import NSFileManager, NSURL
 from .compat import text_type
+from .util import preprocess_paths
 
 
 def check_op_result(op_result):
@@ -16,8 +17,7 @@ def check_op_result(op_result):
 
 
 def send2trash(paths):
-    if not isinstance(paths, list):
-        paths = [paths]
+    paths = preprocess_paths(paths)
     paths = [
         path.decode("utf-8") if not isinstance(path, text_type) else path
         for path in paths
