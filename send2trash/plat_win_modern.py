@@ -26,6 +26,8 @@ def send2trash(paths):
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # remove the leading \\?\ if present
     paths = [path[4:] if path.startswith("\\\\?\\") else path for path in paths]
+    # Need to initialize the com before using
+    pythoncom.CoInitialize()
     # create instance of file operation object
     fileop = pythoncom.CoCreateInstance(
         shell.CLSID_FileOperation, None, pythoncom.CLSCTX_ALL, shell.IID_IFileOperation,
@@ -65,3 +67,6 @@ def send2trash(paths):
         # convert to standard OS error, allows other code to get a
         # normal errno
         raise OSError(None, error.strerror, path, error.hresult)
+    finally:
+        # Need to make sure we call this once fore every init
+        pythoncom.CoUninitialize()
