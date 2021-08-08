@@ -22,9 +22,13 @@ issues and fixes would be most appreciated.
 Installation
 ------------
 
-You can download it with pip::
+You can download it with pip:
 
     python -m pip install -U send2trash
+
+To install with pywin32 or pyobjc required specify the extra `nativeLib`:
+
+    python -m pip install -U send2trash[nativeLib]
 
 or you can download the source from http://github.com/arsenetar/send2trash and install it with::
 

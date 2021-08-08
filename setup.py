@@ -35,7 +35,14 @@ setup(
     description="Send file to trash natively under Mac OS X, Windows and Linux.",
     long_description=LONG_DESCRIPTION,
     classifiers=CLASSIFIERS,
-    extras_require={"win32": ["pywin32"], "objc": ["pyobjc-framework-Cocoa"]},
+    extras_require={
+        "win32": ['pywin32; sys_platform == "win32"'],
+        "objc": ['pyobjc-framework-Cocoa; sys_platform == "darwin"'],
+        "nativeLib": [
+            'pywin32; sys_platform == "win32"',
+            'pyobjc-framework-Cocoa; sys_platform == "darwin"',
+        ],
+    },
     project_urls={"Bug Reports": "https://github.com/arsenetar/send2trash/issues"},
     entry_points={"console_scripts": ["send2trash=send2trash.__main__:main"]},
 )
