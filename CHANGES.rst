@@ -1,5 +1,13 @@
 Changes
 =======
+
+Version 1.8.0 -- 2021/08/08
+---------------------------
+
+* Add compatibility with pathlib paths (#49)
+* Fix thread compatibility of modern windows implementation (#59)
+* Fix handling of UNC names in legacy windows implementation  (#57)
+
 Version 1.7.1 -- 2021/06/21
 ---------------------------
 

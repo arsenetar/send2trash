@@ -24,7 +24,7 @@ with open("README.rst", "rt") as f1, open("CHANGES.rst", "rt") as f2:
 
 setup(
     name="Send2Trash",
-    version="1.7.1",
+    version="1.8.0",
     author="Andrew Senetar",
     author_email="arsenetar@voltaicideas.net",
     packages=["send2trash"],
@@ -34,6 +34,7 @@ setup(
     license="BSD License",
     description="Send file to trash natively under Mac OS X, Windows and Linux.",
     long_description=LONG_DESCRIPTION,
+    long_description_content_type="text/x-rst",
     classifiers=CLASSIFIERS,
     extras_require={
         "win32": ['pywin32; sys_platform == "win32"'],
