@@ -44,12 +44,12 @@ jobs:
             python-version: 3.5
           - os: ubuntu-latest
             python-version: 2.7
-          - os: macos-latest
-            python-version: 3.9
-          - os: macos-latest
-            python-version: 3.8
-          - os: macos-latest
-            python-version: 2.7
+          # - os: macos-latest
+          #   python-version: 3.9
+          # - os: macos-latest
+          #   python-version: 3.8
+          # - os: macos-latest
+          #   python-version: 2.7
           - os: windows-latest
             python-version: 3.9
           - os: windows-latest
@@ -71,7 +71,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
         pip install pywin32
-    - name: Install macOs dependencies
+    - name: Install macOS dependencies
       if: ${{ matrix.os == 'macos-latest' }}
       run: | 
         pip install pyobjc-framework-Cocoa
