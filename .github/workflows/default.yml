@@ -29,25 +29,35 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [2.7, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10]
-        exclude:
-          - os: macos-latest
-            python-version: 3.4
-          - os: macos-latest
-            python-version: 3.5
-          - os: macos-latest
-            python-version: 3.6
-          - os: macos-latest
+        include:
+          - os: ubuntu-latest
+            python-version: 3.10.0-alpha - 3.10.0
+          - os: ubuntu-latest
+            python-version: 3.9
+          - os: ubuntu-latest
+            python-version: 3.8
+          - os: ubuntu-latest
             python-version: 3.7
-          - os: windows-latest
-            python-version: 3.4
-          - os: windows-latest
-            python-version: 3.5
-          - os: windows-latest
+          - os: ubuntu-latest
             python-version: 3.6
+          - os: ubuntu-latest
+            python-version: 3.5
+          - os: ubuntu-18.04
+            python-version: 3.4
+          - os: ubuntu-latest
+            python-version: 2.7
+          - os: macos-latest
+            python-version: 3.9
+          - os: macos-latest
+            python-version: 3.8
+          - os: macos-latest
+            python-version: 2.7
           - os: windows-latest
-            python-version: 3.7
+            python-version: 3.9
+          - os: windows-latest
+            python-version: 3.8
+          - os: windows-latest
+            python-version: 2.7
 
     steps:
     - uses: actions/checkout@v2
