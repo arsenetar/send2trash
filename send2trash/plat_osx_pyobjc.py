@@ -18,10 +18,7 @@ def check_op_result(op_result):
 
 def send2trash(paths):
     paths = preprocess_paths(paths)
-    paths = [
-        path.decode("utf-8") if not isinstance(path, text_type) else path
-        for path in paths
-    ]
+    paths = [path.decode("utf-8") if not isinstance(path, text_type) else path for path in paths]
     for path in paths:
         file_url = NSURL.fileURLWithPath_(path)
         fm = NSFileManager.defaultManager()

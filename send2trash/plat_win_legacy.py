@@ -105,10 +105,7 @@ def get_short_path_name(long_name):
 def send2trash(paths):
     paths = preprocess_paths(paths)
     # convert data type
-    paths = [
-        text_type(path, "mbcs") if not isinstance(path, text_type) else path
-        for path in paths
-    ]
+    paths = [text_type(path, "mbcs") if not isinstance(path, text_type) else path for path in paths]
     # convert to full paths
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # get short path to handle path length issues

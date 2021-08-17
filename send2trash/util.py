@@ -10,7 +10,5 @@ def preprocess_paths(paths):
     if not isinstance(paths, list):
         paths = [paths]
     # Convert items such as pathlib paths to strings
-    paths = [
-        path.__fspath__() if hasattr(path, "__fspath__") else path for path in paths
-    ]
+    paths = [path.__fspath__() if hasattr(path, "__fspath__") else path for path in paths]
     return paths

@@ -103,9 +103,7 @@ def trash_move(src, dst, topdir=None):
 
     counter = 0
     destname = filename
-    while op.exists(op.join(filespath, destname)) or op.exists(
-        op.join(infopath, destname + INFO_SUFFIX)
-    ):
+    while op.exists(op.join(filespath, destname)) or op.exists(op.join(infopath, destname + INFO_SUFFIX)):
         counter += 1
         destname = base_name + b" " + text_type(counter).encode("ascii") + ext
 

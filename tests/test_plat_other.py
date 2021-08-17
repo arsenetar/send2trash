@@ -28,9 +28,7 @@ else:
 
 @pytest.fixture
 def testfile():
-    file = NamedTemporaryFile(
-        dir=op.expanduser("~"), prefix="send2trash_test", delete=False
-    )
+    file = NamedTemporaryFile(dir=op.expanduser("~"), prefix="send2trash_test", delete=False)
     file.close()
     assert op.exists(file.name) is True
     yield file
@@ -50,9 +48,7 @@ def testfiles():
     files = list(
         map(
             lambda index: NamedTemporaryFile(
-                dir=op.expanduser("~"),
-                prefix="send2trash_test{}".format(index),
-                delete=False,
+                dir=op.expanduser("~"), prefix="send2trash_test{}".format(index), delete=False,
             ),
             range(10),
         )
@@ -62,10 +58,7 @@ def testfiles():
     yield files
     filenames = [op.basename(file.name) for file in files]
     [os.remove(op.join(HOMETRASH, "files", filename)) for filename in filenames]
-    [
-        os.remove(op.join(HOMETRASH, "info", filename + ".trashinfo"))
-        for filename in filenames
-    ]
+    [os.remove(op.join(HOMETRASH, "info", filename + ".trashinfo")) for filename in filenames]
 
 
 def test_trash(testfile):
@@ -136,10 +129,7 @@ class ExtVol:
             return st.st_dev
 
         def s_ismount(path):
-            if op.realpath(path) in (
-                op.realpath(self.trashTopdir),
-                op.realpath(self.trashTopdir_b),
-            ):
+            if op.realpath(path) in (op.realpath(self.trashTopdir), op.realpath(self.trashTopdir_b),):
                 return True
             return old_ismount(path)
 
@@ -172,15 +162,8 @@ def test_trash_topdir(testExtVol):
 
     s2t(testExtVol[2])
     assert op.exists(testExtVol[2]) is False
-    assert (
-        op.exists(op.join(trashDir, str(os.getuid()), "files", testExtVol[1])) is True
-    )
-    assert (
-        op.exists(
-            op.join(trashDir, str(os.getuid()), "info", testExtVol[1] + ".trashinfo",)
-        )
-        is True
-    )
+    assert op.exists(op.join(trashDir, str(os.getuid()), "files", testExtVol[1])) is True
+    assert op.exists(op.join(trashDir, str(os.getuid()), "info", testExtVol[1] + ".trashinfo",)) is True
     # info relative path (if another test is added, with the same fileName/Path,
     # then it gets renamed etc.)
     cfg = ConfigParser()
@@ -191,17 +174,7 @@ def test_trash_topdir(testExtVol):
 def test_trash_topdir_fallback(testExtVol):
     s2t(testExtVol[2])
     assert op.exists(testExtVol[2]) is False
-    assert (
-        op.exists(
-            op.join(
-                testExtVol[0].trashTopdir,
-                ".Trash-" + str(os.getuid()),
-                "files",
-                testExtVol[1],
-            )
-        )
-        is True
-    )
+    assert op.exists(op.join(testExtVol[0].trashTopdir, ".Trash-" + str(os.getuid()), "files", testExtVol[1],)) is True
 
 
 def test_trash_topdir_failure(testExtVol):
@@ -221,15 +194,5 @@ def test_trash_symlink(testExtVol):
     os.symlink(op.join(testExtVol[0].trashTopdir, "subdir"), slDir)
     s2t(op.join(slDir, testExtVol[1]))
     assert op.exists(filePath) is False
-    assert (
-        op.exists(
-            op.join(
-                testExtVol[0].trashTopdir,
-                ".Trash-" + str(os.getuid()),
-                "files",
-                testExtVol[1],
-            )
-        )
-        is True
-    )
+    assert op.exists(op.join(testExtVol[0].trashTopdir, ".Trash-" + str(os.getuid()), "files", testExtVol[1],)) is True
     os.remove(slDir)

@@ -14,9 +14,7 @@ if sys.platform != "win32":
 
 @pytest.fixture
 def file():
-    file = NamedTemporaryFile(
-        dir=op.expanduser("~"), prefix="send2trash_test", delete=False
-    )
+    file = NamedTemporaryFile(dir=op.expanduser("~"), prefix="send2trash_test", delete=False)
     file.close()
     # Verify file was actually created
     assert op.exists(file.name) is True

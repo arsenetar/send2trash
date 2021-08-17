@@ -18,10 +18,7 @@ from .IFileOperationProgressSink import CreateSink
 def send2trash(paths):
     paths = preprocess_paths(paths)
     # convert data type
-    paths = [
-        text_type(path, "mbcs") if not isinstance(path, text_type) else path
-        for path in paths
-    ]
+    paths = [text_type(path, "mbcs") if not isinstance(path, text_type) else path for path in paths]
     # convert to full paths
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # remove the leading \\?\ if present
@@ -33,19 +30,11 @@ def send2trash(paths):
         shell.CLSID_FileOperation, None, pythoncom.CLSCTX_ALL, shell.IID_IFileOperation,
     )
     # default flags to use
-    flags = (
-        shellcon.FOF_NOCONFIRMATION
-        | shellcon.FOF_NOERRORUI
-        | shellcon.FOF_SILENT
-        | shellcon.FOFX_EARLYFAILURE
-    )
+    flags = shellcon.FOF_NOCONFIRMATION | shellcon.FOF_NOERRORUI | shellcon.FOF_SILENT | shellcon.FOFX_EARLYFAILURE
     # determine rest of the flags based on OS version
     # use newer recommended flags if available
     if int(version().split(".", 1)[0]) >= 8:
-        flags |= (
-            0x20000000  # FOFX_ADDUNDORECORD win 8+
-            | 0x00080000  # FOFX_RECYCLEONDELETE win 8+
-        )
+        flags |= 0x20000000 | 0x00080000  # FOFX_ADDUNDORECORD win 8+  # FOFX_RECYCLEONDELETE win 8+
     else:
         flags |= shellcon.FOF_ALLOWUNDO
     # set the flags
