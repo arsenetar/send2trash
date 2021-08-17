@@ -48,17 +48,9 @@ jobs:
             python-version: 3.6
           - os: windows-latest
             python-version: 3.7
-        include:
-          - arch: ppc64le
-            distro: ubuntu20.04
-            python-version: 2.7
-          - arch: ppc64le
-            distro: ubuntu20.04
-            python-version: 3.6
 
     steps:
     - uses: actions/checkout@v2
-    - uses: uraimo/run-on-arch-action@v2.0.5
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
