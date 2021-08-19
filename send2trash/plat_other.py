@@ -24,7 +24,6 @@ from datetime import datetime
 import shutil
 import stat
 
-
 try:
     from urllib.parse import quote
 except ImportError:
