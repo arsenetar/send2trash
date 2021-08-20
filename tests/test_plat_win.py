@@ -144,7 +144,10 @@ def longdir(tmp_path):
     dirname = "\\\\?\\" + str(tmp_path)
     name = "A" * 100
     yield op.join(dirname, name, name, name)
-    shutil.rmtree(dirname, ignore_errors=True)
+    try:
+        shutil.rmtree(dirname, ignore_errors=True)
+    except TypeError:
+        pass
 
 
 @pytest.fixture
