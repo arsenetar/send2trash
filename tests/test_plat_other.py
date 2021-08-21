@@ -190,13 +190,13 @@ def test_trash_symlink(gen_ext_vol):
     # Since is_parent uses realpath(), and our getdev uses is_parent,
     # this should work
     sl_dir = mktemp(prefix="s2t", dir=op.expanduser("~"))
-    os.mkdir(op.join(gen_ext_vol[0].trashTopdir, "subdir"), 0o700)
-    file_path = op.join(gen_ext_vol[0].trashTopdir, "subdir", gen_ext_vol[1])
+    os.mkdir(op.join(gen_ext_vol[0].trash_topdir, "subdir"), 0o700)
+    file_path = op.join(gen_ext_vol[0].trash_topdir, "subdir", gen_ext_vol[1])
     touch(file_path)
-    os.symlink(op.join(gen_ext_vol[0].trashTopdir, "subdir"), sl_dir)
+    os.symlink(op.join(gen_ext_vol[0].trash_topdir, "subdir"), sl_dir)
     s2t(op.join(sl_dir, gen_ext_vol[1]))
     assert op.exists(file_path) is False
     assert (
-        op.exists(op.join(gen_ext_vol[0].trashTopdir, ".Trash-" + str(os.getuid()), "files", gen_ext_vol[1],)) is True
+        op.exists(op.join(gen_ext_vol[0].trash_topdir, ".Trash-" + str(os.getuid()), "files", gen_ext_vol[1],)) is True
     )
     os.remove(sl_dir)
