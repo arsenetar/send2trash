@@ -13,7 +13,7 @@ except ImportError:
     # py2
     from ConfigParser import ConfigParser  # noqa: F401
 
-from tempfile import mkdtemp, NamedTemporaryFile, mktemp
+from tempfile import mkdtemp, NamedTemporaryFile
 import shutil
 import stat
 import uuid
