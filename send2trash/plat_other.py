@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 import errno
 import sys
 import os
+import shutil
 import os.path as op
 from datetime import datetime
 import stat
@@ -95,7 +96,7 @@ def check_create(dir):
         os.makedirs(dir, 0o700)
 
 
-def trash_move(src, dst, topdir=None):
+def trash_move(src, dst, topdir=None, cross_dev=False):
     filename = op.basename(src)
     filespath = op.join(dst, FILES_DIR)
     infopath = op.join(dst, INFO_DIR)
@@ -112,14 +113,18 @@ def trash_move(src, dst, topdir=None):
 
     with open(op.join(infopath, destname + INFO_SUFFIX), "w") as f:
         f.write(info_for(src, topdir))
-    os.rename(src, op.join(filespath, destname))
+    destpath = op.join(filespath, destname)
+    if cross_dev:
+        shutil.move(src, destpath)
+    else:
+        os.rename(src, destpath)
 
 
 def find_mount_point(path):
     # Even if something's wrong, "/" is a mount point, so the loop will exit.
     # Use realpath in case it's a symlink
     path = op.realpath(path)  # Required to avoid infinite loop
-    while not op.ismount(path):
+    while not op.ismount(path):  # Note ismount() does not always detect mounts
         path = op.split(path)[0]
     return path
 
@@ -206,4 +211,11 @@ def send2trash(paths):
             if trash_dev != path_dev:
                 raise OSError("Couldn't find mount point for %s" % path)
             dest_trash = find_ext_volume_trash(topdir)
-        trash_move(path_b, dest_trash, topdir)
+        try:
+            trash_move(path_b, dest_trash, topdir)
+        except OSError as error:
+            # Cross link errors default back to HOMETRASH
+            if error.errno == errno.EXDEV:
+                trash_move(path_b, HOMETRASH_B, XDG_DATA_HOME, cross_dev=True)
+            else:
+                raise
