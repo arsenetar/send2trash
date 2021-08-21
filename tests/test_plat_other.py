@@ -16,6 +16,7 @@ except ImportError:
 from tempfile import mkdtemp, NamedTemporaryFile, mktemp
 import shutil
 import stat
+import uuid
 
 if sys.platform != "win32":
     import send2trash.plat_other
@@ -91,11 +92,9 @@ def gen_unicode_file():
     assert op.exists(file) is True
     yield file
     # Cleanup trash files on supported platforms
-    if sys.platform != "win32":
-        # Remove trash files if they exist
-        if op.exists(op.join(HOMETRASH, "files", name)):
-            os.remove(op.join(HOMETRASH, "files", name))
-            os.remove(op.join(HOMETRASH, "info", name + ".trashinfo"))
+    if sys.platform != "win32" and op.exists(op.join(HOMETRASH, "files", name)):
+        os.remove(op.join(HOMETRASH, "files", name))
+        os.remove(op.join(HOMETRASH, "info", name + ".trashinfo"))
     if op.exists(file):
         os.remove(file)
 
@@ -186,10 +185,8 @@ def test_trash_topdir_failure(gen_ext_vol):
 
 
 def test_trash_symlink(gen_ext_vol):
-    # Use mktemp (race conditioney but no symlink equivalent)
-    # Since is_parent uses realpath(), and our getdev uses is_parent,
-    # this should work
-    sl_dir = mktemp(prefix="s2t", dir=op.expanduser("~"))
+    # Generating a random uuid named path for symlink
+    sl_dir = op.join(op.expanduser("~"), "s2t_" + str(uuid.uuid4()))
     os.mkdir(op.join(gen_ext_vol[0].trash_topdir, "subdir"), 0o700)
     file_path = op.join(gen_ext_vol[0].trash_topdir, "subdir", gen_ext_vol[1])
     touch(file_path)
