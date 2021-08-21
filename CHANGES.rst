@@ -1,6 +1,10 @@
 Changes
 =======
 
+Version 1.8.1b0 -- 2021/09/20
+-----------------------------
+* Add fallback to HOMETRASH when cross device errors happen in plat_other (#26, $41, #63)
+
 Version 1.8.0 -- 2021/08/08
 ---------------------------
 
