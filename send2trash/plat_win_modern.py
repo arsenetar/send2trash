@@ -12,7 +12,7 @@ from platform import version
 import pythoncom
 import pywintypes
 from win32com.shell import shell, shellcon
-from .IFileOperationProgressSink import CreateSink
+from .IFileOperationProgressSink import create_sink
 
 
 def send2trash(paths):
@@ -42,7 +42,7 @@ def send2trash(paths):
     # actually try to perform the operation, this section may throw a
     # pywintypes.com_error which does not seem to create as nice of an
     # error as OSError so wrapping with try to convert
-    sink = CreateSink()
+    sink = create_sink()
     try:
         for path in paths:
             item = shell.SHCreateItemFromParsingName(path, None, shell.IID_IShellItem)
