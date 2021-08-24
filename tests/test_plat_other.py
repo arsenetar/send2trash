@@ -22,7 +22,7 @@ if sys.platform != "win32":
     import send2trash.plat_other
     from send2trash.plat_other import send2trash as s2t
 
-    INFO_SUFFIX = send2trash.plat_other.INFO_SUFFIX
+    INFO_SUFFIX = send2trash.plat_other.INFO_SUFFIX.decode()
     HOMETRASH = send2trash.plat_other.HOMETRASH
 else:
     pytest.skip("Skipping non-windows tests", allow_module_level=True)
