@@ -22,6 +22,7 @@ if sys.platform != "win32":
     import send2trash.plat_other
     from send2trash.plat_other import send2trash as s2t
 
+    INFO_SUFFIX = send2trash.plat_other.INFO_SUFFIX
     HOMETRASH = send2trash.plat_other.HOMETRASH
 else:
     pytest.skip("Skipping non-windows tests", allow_module_level=True)
@@ -39,7 +40,7 @@ def testfile():
         # Remove trash files if they exist
         if op.exists(op.join(HOMETRASH, "files", name)):
             os.remove(op.join(HOMETRASH, "files", name))
-            os.remove(op.join(HOMETRASH, "info", name + ".trashinfo"))
+            os.remove(op.join(HOMETRASH, "info", name + INFO_SUFFIX))
     if op.exists(file.name):
         os.remove(file.name)
 
@@ -59,7 +60,7 @@ def testfiles():
     yield files
     filenames = [op.basename(file.name) for file in files]
     [os.remove(op.join(HOMETRASH, "files", filename)) for filename in filenames]
-    [os.remove(op.join(HOMETRASH, "info", filename + ".trashinfo")) for filename in filenames]
+    [os.remove(op.join(HOMETRASH, "info", filename + INFO_SUFFIX)) for filename in filenames]
 
 
 def test_trash(testfile):
@@ -94,7 +95,7 @@ def gen_unicode_file():
     # Cleanup trash files on supported platforms
     if sys.platform != "win32" and op.exists(op.join(HOMETRASH, "files", name)):
         os.remove(op.join(HOMETRASH, "files", name))
-        os.remove(op.join(HOMETRASH, "info", name + ".trashinfo"))
+        os.remove(op.join(HOMETRASH, "info", name + INFO_SUFFIX))
     if op.exists(file):
         os.remove(file)
 
@@ -162,11 +163,11 @@ def test_trash_topdir(gen_ext_vol):
     s2t(gen_ext_vol[2])
     assert op.exists(gen_ext_vol[2]) is False
     assert op.exists(op.join(trash_dir, str(os.getuid()), "files", gen_ext_vol[1])) is True
-    assert op.exists(op.join(trash_dir, str(os.getuid()), "info", gen_ext_vol[1] + ".trashinfo",)) is True
+    assert op.exists(op.join(trash_dir, str(os.getuid()), "info", gen_ext_vol[1] + INFO_SUFFIX,)) is True
     # info relative path (if another test is added, with the same fileName/Path,
     # then it gets renamed etc.)
     cfg = ConfigParser()
-    cfg.read(op.join(trash_dir, str(os.getuid()), "info", gen_ext_vol[1] + ".trashinfo"))
+    cfg.read(op.join(trash_dir, str(os.getuid()), "info", gen_ext_vol[1] + INFO_SUFFIX))
     assert (gen_ext_vol[1] == cfg.get("Trash Info", "Path", raw=True)) is True
 
 

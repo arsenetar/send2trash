@@ -182,26 +182,23 @@ def send2trash(paths):
             path_b = fsencode(path)
         elif isinstance(path, bytes):
             path_b = path
-        elif hasattr(path, "__fspath__"):
-            # Python 3.6 PathLike protocol
-            return send2trash(path.__fspath__())
         else:
             raise TypeError("str, bytes or PathLike expected, not %r" % type(path))
 
         if not op.exists(path_b):
-            raise OSError("File not found: %s" % path)
+            raise OSError(errno.ENOENT, "File not found: %s" % path)
         # ...should check whether the user has the necessary permissions to delete
         # it, before starting the trashing operation itself. [2]
         if not os.access(path_b, os.W_OK):
-            raise OSError("Permission denied: %s" % path)
-        # if the file to be trashed is on the same device as HOMETRASH we
-        # want to move it there.
-        path_dev = get_dev(path_b)
+            raise OSError(errno.EACCES, "Permission denied: %s" % path)
 
+        path_dev = get_dev(path_b)
         # If XDG_DATA_HOME or HOMETRASH do not yet exist we need to stat the
         # home directory, and these paths will be created further on if needed.
         trash_dev = get_dev(op.expanduser(b"~"))
 
+        # if the file to be trashed is on the same device as HOMETRASH we
+        # want to move it there.
         if path_dev == trash_dev:
             topdir = XDG_DATA_HOME
             dest_trash = HOMETRASH_B
