@@ -9,9 +9,9 @@ import sys
 from .exceptions import TrashPermissionError  # noqa: F401
 
 if sys.platform == "darwin":
-    from .plat_osx import send2trash
+    from .mac import send2trash
 elif sys.platform == "win32":
-    from .plat_win import send2trash
+    from .win import send2trash
 else:
     try:
         # If we can use gio, let's use it

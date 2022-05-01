@@ -6,8 +6,8 @@
 
 from __future__ import unicode_literals
 import os.path as op
-from .compat import text_type
-from .util import preprocess_paths
+from ..compat import text_type
+from ..util import preprocess_paths
 from platform import version
 import pythoncom
 import pywintypes
@@ -27,7 +27,10 @@ def send2trash(paths):
     pythoncom.CoInitialize()
     # create instance of file operation object
     fileop = pythoncom.CoCreateInstance(
-        shell.CLSID_FileOperation, None, pythoncom.CLSCTX_ALL, shell.IID_IFileOperation,
+        shell.CLSID_FileOperation,
+        None,
+        pythoncom.CLSCTX_ALL,
+        shell.IID_IFileOperation,
     )
     # default flags to use
     flags = shellcon.FOF_NOCONFIRMATION | shellcon.FOF_NOERRORUI | shellcon.FOF_SILENT | shellcon.FOFX_EARLYFAILURE

@@ -11,10 +11,10 @@ from platform import version
 if int(version().split(".", 1)[0]) >= 6:
     try:
         # Attempt to use pywin32 to use IFileOperation
-        from .plat_win_modern import send2trash
+        from .modern import send2trash
     except ImportError:
         # use SHFileOperation as fallback
-        from .plat_win_legacy import send2trash
+        from .legacy import send2trash
 else:
     # use SHFileOperation as fallback
-    from .plat_win_legacy import send2trash  # noqa: F401
+    from .legacy import send2trash  # noqa: F401

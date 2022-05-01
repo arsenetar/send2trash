@@ -6,8 +6,8 @@
 
 from __future__ import unicode_literals
 import os.path as op
-from .compat import text_type
-from .util import preprocess_paths
+from ..compat import text_type
+from ..util import preprocess_paths
 
 from ctypes import (
     windll,
@@ -51,6 +51,44 @@ FOF_SILENT = 4
 FOF_NOCONFIRMATION = 16
 FOF_ALLOWUNDO = 64
 FOF_NOERRORUI = 1024
+
+
+def convert_sh_file_opt_result(result):
+    # map overlapping values from SHFileOpterationW to approximate standard windows errors
+    # ref https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shfileoperationw#return-value
+    # ref https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
+    results = {
+        0x71: 0x50,  # DE_SAMEFILE -> ERROR_FILE_EXISTS
+        0x72: 0x57,  # DE_MANYSRC1DEST -> ERROR_INVALID_PARAMETER
+        0x73: 0x57,  # DE_DIFFDIR -> ERROR_INVALID_PARAMETER
+        0x74: 0x57,  # DE_ROOTDIR -> ERROR_INVALID_PARAMETER
+        0x75: 0x4C7,  # DE_OPCANCELLED -> ERROR_CANCELLED
+        0x76: 0x57,  # DE_DESTSUBTREE -> ERROR_INVALID_PARAMETER
+        0x78: 0x05,  # DE_ACCESSDENIEDSRC -> ERROR_ACCESS_DENIED
+        0x79: 0x6F,  # DE_PATHTOODEEP -> ERROR_BUFFER_OVERFLOW
+        0x7A: 0x57,  # DE_MANYDEST -> ERROR_INVALID_PARAMETER
+        0x7C: 0xA1,  # DE_INVALIDFILES -> ERROR_BAD_PATHNAME
+        0x7D: 0x57,  # DE_DESTSAMETREE -> ERROR_INVALID_PARAMETER
+        0x7E: 0xB7,  # DE_FLDDESTISFILE -> ERROR_ALREADY_EXISTS
+        0x80: 0xB7,  # DE_FILEDESTISFLD -> ERROR_ALREADY_EXISTS
+        0x81: 0x6F,  # DE_FILENAMETOOLONG -> ERROR_BUFFER_OVERFLOW
+        0x82: 0x13,  # DE_DEST_IS_CDROM -> ERROR_WRITE_PROTECT
+        0x83: 0x13,  # DE_DEST_IS_DVD -> ERROR_WRITE_PROTECT
+        0x84: 0x6F9,  # DE_DEST_IS_CDRECORD -> ERROR_UNRECOGNIZED_MEDIA
+        0x85: 0xDF,  # DE_FILE_TOO_LARGE -> ERROR_FILE_TOO_LARGE
+        0x86: 0x13,  # DE_SRC_IS_CDROM -> ERROR_WRITE_PROTECT
+        0x87: 0x13,  # DE_SRC_IS_DVD -> ERROR_WRITE_PROTECT
+        0x88: 0x6F9,  # DE_SRC_IS_CDRECORD -> ERROR_UNRECOGNIZED_MEDIA
+        0xB7: 0x6F,  # DE_ERROR_MAX -> ERROR_BUFFER_OVERFLOW
+        0x402: 0xA1,  # UNKNOWN -> ERROR_BAD_PATHNAME
+        0x10000: 0x1D,  # ERRORONDEST -> ERROR_WRITE_FAULT
+        0x10074: 0x57,  # DE_ROOTDIR | ERRORONDEST -> ERROR_INVALID_PARAMETER
+    }
+
+    if result in results.keys():
+        return results[result]
+    else:
+        return result
 
 
 def prefix_and_path(path):
@@ -141,4 +179,5 @@ def send2trash(paths):
     fileop.lpszProgressTitle = None
     result = SHFileOperationW(byref(fileop))
     if result:
-        raise WindowsError(result, FormatError(result), paths)
+        error = convert_sh_file_opt_result(result)
+        raise WindowsError(None, FormatError(error), paths, error)

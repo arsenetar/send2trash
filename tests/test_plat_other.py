@@ -50,7 +50,9 @@ def testfiles():
     files = list(
         map(
             lambda index: NamedTemporaryFile(
-                dir=op.expanduser("~"), prefix="send2trash_test{}".format(index), delete=False,
+                dir=op.expanduser("~"),
+                prefix="send2trash_test{}".format(index),
+                delete=False,
             ),
             range(10),
         )
@@ -129,7 +131,10 @@ class ExtVol:
             return st.st_dev
 
         def s_ismount(path):
-            if op.realpath(path) in (op.realpath(self.trash_topdir), op.realpath(self.trash_topdir_b),):
+            if op.realpath(path) in (
+                op.realpath(self.trash_topdir),
+                op.realpath(self.trash_topdir_b),
+            ):
                 return True
             return old_ismount(path)
 
@@ -163,7 +168,17 @@ def test_trash_topdir(gen_ext_vol):
     s2t(gen_ext_vol[2])
     assert op.exists(gen_ext_vol[2]) is False
     assert op.exists(op.join(trash_dir, str(os.getuid()), "files", gen_ext_vol[1])) is True
-    assert op.exists(op.join(trash_dir, str(os.getuid()), "info", gen_ext_vol[1] + INFO_SUFFIX,)) is True
+    assert (
+        op.exists(
+            op.join(
+                trash_dir,
+                str(os.getuid()),
+                "info",
+                gen_ext_vol[1] + INFO_SUFFIX,
+            )
+        )
+        is True
+    )
     # info relative path (if another test is added, with the same fileName/Path,
     # then it gets renamed etc.)
     cfg = ConfigParser()
@@ -175,7 +190,15 @@ def test_trash_topdir_fallback(gen_ext_vol):
     s2t(gen_ext_vol[2])
     assert op.exists(gen_ext_vol[2]) is False
     assert (
-        op.exists(op.join(gen_ext_vol[0].trash_topdir, ".Trash-" + str(os.getuid()), "files", gen_ext_vol[1],)) is True
+        op.exists(
+            op.join(
+                gen_ext_vol[0].trash_topdir,
+                ".Trash-" + str(os.getuid()),
+                "files",
+                gen_ext_vol[1],
+            )
+        )
+        is True
     )
 
 
@@ -195,6 +218,14 @@ def test_trash_symlink(gen_ext_vol):
     s2t(op.join(sl_dir, gen_ext_vol[1]))
     assert op.exists(file_path) is False
     assert (
-        op.exists(op.join(gen_ext_vol[0].trash_topdir, ".Trash-" + str(os.getuid()), "files", gen_ext_vol[1],)) is True
+        op.exists(
+            op.join(
+                gen_ext_vol[0].trash_topdir,
+                ".Trash-" + str(os.getuid()),
+                "files",
+                gen_ext_vol[1],
+            )
+        )
+        is True
     )
     os.remove(sl_dir)

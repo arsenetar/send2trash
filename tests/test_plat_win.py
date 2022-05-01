@@ -9,8 +9,8 @@ from send2trash import send2trash as s2t
 
 # import the two versions as well as the "automatic" version
 if sys.platform == "win32":
-    from send2trash.plat_win_modern import send2trash as s2t_modern
-    from send2trash.plat_win_legacy import send2trash as s2t_legacy
+    from send2trash.win.modern import send2trash as s2t_modern
+    from send2trash.win.legacy import send2trash as s2t_legacy
 else:
     pytest.skip("Skipping windows-only tests", allow_module_level=True)
 
