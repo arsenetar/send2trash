@@ -5,8 +5,8 @@
 # http://www.hardcoded.net/licenses/bsd_license
 
 from gi.repository import GObject, Gio
-from .exceptions import TrashPermissionError
-from .util import preprocess_paths
+from send2trash.exceptions import TrashPermissionError
+from send2trash.util import preprocess_paths
 
 
 def send2trash(paths):

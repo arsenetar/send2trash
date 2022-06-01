@@ -6,8 +6,8 @@
 
 from __future__ import unicode_literals
 import os.path as op
-from ..compat import text_type
-from ..util import preprocess_paths
+from send2trash.compat import text_type
+from send2trash.util import preprocess_paths
 
 from ctypes import (
     windll,

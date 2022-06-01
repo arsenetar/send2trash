@@ -30,9 +30,9 @@ except ImportError:
     # Python 2
     from urllib import quote
 
-from .compat import text_type, environb
-from .util import preprocess_paths
-from .exceptions import TrashPermissionError
+from send2trash.compat import text_type, environb
+from send2trash.util import preprocess_paths
+from send2trash.exceptions import TrashPermissionError
 
 try:
     fsencode = os.fsencode  # Python 3

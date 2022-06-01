@@ -11,10 +11,10 @@ from sys import version_info
 macos_ver = tuple(int(part) for part in mac_ver()[0].split("."))
 if version_info >= (3, 6) and macos_ver >= (10, 9):
     try:
-        from .modern import send2trash
+        from send2trash.mac.modern import send2trash
     except ImportError:
         # Try to fall back to ctypes version, although likely problematic still
-        from .legacy import send2trash
+        from send2trash.mac.legacy import send2trash
 else:
     # Just use the old version otherwise
-    from .legacy import send2trash  # noqa: F401
+    from send2trash.mac.legacy import send2trash  # noqa: F401

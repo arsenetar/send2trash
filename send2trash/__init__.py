@@ -6,16 +6,16 @@
 
 import sys
 
-from .exceptions import TrashPermissionError  # noqa: F401
+from send2trash.exceptions import TrashPermissionError  # noqa: F401
 
 if sys.platform == "darwin":
-    from .mac import send2trash
+    from send2trash.mac import send2trash
 elif sys.platform == "win32":
-    from .win import send2trash
+    from send2trash.win import send2trash
 else:
     try:
         # If we can use gio, let's use it
-        from .plat_gio import send2trash
+        from send2trash.plat_gio import send2trash
     except ImportError:
         # Oh well, let's fallback to our own Freedesktop trash implementation
-        from .plat_other import send2trash  # noqa: F401
+        from send2trash.plat_other import send2trash  # noqa: F401

@@ -9,8 +9,8 @@ from __future__ import unicode_literals
 from ctypes import cdll, byref, Structure, c_char, c_char_p
 from ctypes.util import find_library
 
-from ..compat import binary_type
-from ..util import preprocess_paths
+from send2trash.compat import binary_type
+from send2trash.util import preprocess_paths
 
 Foundation = cdll.LoadLibrary(find_library("Foundation"))
 CoreServices = cdll.LoadLibrary(find_library("CoreServices"))
