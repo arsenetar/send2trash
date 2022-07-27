@@ -6,6 +6,7 @@
 
 from __future__ import unicode_literals
 import os.path as op
+
 from send2trash.compat import text_type
 from send2trash.util import preprocess_paths
 
@@ -142,6 +143,8 @@ def get_short_path_name(long_name):
 
 def send2trash(paths):
     paths = preprocess_paths(paths)
+    if not paths:
+        return
     # convert data type
     paths = [text_type(path, "mbcs") if not isinstance(path, text_type) else path for path in paths]
     # convert to full paths

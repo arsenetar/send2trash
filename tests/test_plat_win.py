@@ -204,3 +204,17 @@ def test_trash_long_multifile_legacy(longfiles):
 #     )
 #     def test_trash_long_folder_legacy(self):
 #         self._trash_folder(s2t_legacy)
+
+
+def test_trash_nothing_legacy():
+    try:
+        s2t_legacy([])
+    except Exception as ex:
+        assert False, f"Exception thrown when trashing nothing: {ex}"
+
+
+def test_trash_nothing_modern():
+    try:
+        s2t_modern([])
+    except Exception as ex:
+        assert False, f"Exception thrown when trashing nothing: {ex}"
