@@ -210,11 +210,11 @@ def test_trash_nothing_legacy():
     try:
         s2t_legacy([])
     except Exception as ex:
-        assert False, f"Exception thrown when trashing nothing: {ex}"
+        assert False, "Exception thrown when trashing nothing: {}".format(ex)
 
 
 def test_trash_nothing_modern():
     try:
         s2t_modern([])
     except Exception as ex:
-        assert False, f"Exception thrown when trashing nothing: {ex}"
+        assert False, "Exception thrown when trashing nothing: {}".format(ex)
