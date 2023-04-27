@@ -1,9 +1,15 @@
 Changes
 =======
 
+Version 1.8.2 -- 2023/04/27
+---------------------------
+* win/legacy: tiny logic simplification by @BoboTiG in https://github.com/arsenetar/send2trash/pull/77
+* TravisCI is not used anymore by @sobolevn in https://github.com/arsenetar/send2trash/pull/73
+* fix(ci): Update to latest actions, fix python versions by @arsenetar in https://github.com/arsenetar/send2trash/pull/78
+
 Version 1.8.1b0 -- 2021/09/20
 -----------------------------
-* Add fallback to HOMETRASH when cross device errors happen in plat_other (#26, $41, #63)
+* Add fallback to HOMETRASH when cross device errors happen in plat_other (#26, #41, #63)
 
 Version 1.8.0 -- 2021/08/08
 ---------------------------
