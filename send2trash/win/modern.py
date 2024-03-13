@@ -14,10 +14,12 @@ import pywintypes
 from win32com.shell import shell, shellcon
 from send2trash.win.IFileOperationProgressSink import create_sink
 from win32api import FormatMessage
-from winerror import ERROR_SHARING_VIOLATION
+from winerror import ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED
 
+#  ERROR_FILE_NOT_FOUND: 0x80070002 is automatically handled by Python
 winerrormap = {
     shellcon.COPYENGINE_E_SHARING_VIOLATION_SRC: ERROR_SHARING_VIOLATION,
+    shellcon.COPYENGINE_E_ACCESS_DENIED_SRC: ERROR_ACCESS_DENIED,
 }
 
 
