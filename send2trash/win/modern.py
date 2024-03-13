@@ -63,22 +63,27 @@ def send2trash(paths):
     # error as OSError so wrapping with try to convert
     pysink, sink = create_sink()
     try:
-        for path in paths:
-            item = shell.SHCreateItemFromParsingName(path, None, shell.IID_IShellItem)
-            fileop.DeleteItem(item, sink)
-        result = fileop.PerformOperations()
-        aborted = fileop.GetAnyOperationsAborted()
-        # if non-zero result or aborted throw an exception
-        assert not pysink.errors, pysink.errors
-        if result or aborted:
-            raise OSError(None, None, paths, result)
-    except pywintypes.com_error:
-        assert len(pysink.errors) == 1, pysink.errors
-        # convert to standard OS error, allows other code to get a
-        # normal errno
-        path, hr = pysink.errors[0]
-        hr = winerrormap.get(hr + 2**32, hr)
-        raise win_exception(hr, path)
+        try:
+            for path in paths:
+                item = shell.SHCreateItemFromParsingName(path, None, shell.IID_IShellItem)
+                fileop.DeleteItem(item, sink)
+        except pywintypes.com_error as error:
+            # convert to standard OS error, allows other code to get a
+            # normal errno
+            raise OSError(None, error.strerror, path, error.hresult)
+
+        try:
+            result = fileop.PerformOperations()
+            aborted = fileop.GetAnyOperationsAborted()
+            # if non-zero result or aborted throw an exception
+            assert not pysink.errors, pysink.errors
+            if result or aborted:
+                raise OSError(None, None, paths, result)
+        except pywintypes.com_error:
+            assert len(pysink.errors) == 1, pysink.errors
+            path, hr = pysink.errors[0]
+            hr = winerrormap.get(hr + 2**32, hr)
+            raise win_exception(hr, path)
     finally:
         # Need to make sure we call this once fore every init
         pythoncom.CoUninitialize()
