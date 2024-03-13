@@ -13,6 +13,20 @@ import pythoncom
 import pywintypes
 from win32com.shell import shell, shellcon
 from send2trash.win.IFileOperationProgressSink import create_sink
+from win32api import FormatMessage
+from winerror import ERROR_SHARING_VIOLATION
+
+winerrormap = {
+    shellcon.COPYENGINE_E_SHARING_VIOLATION_SRC: ERROR_SHARING_VIOLATION,
+}
+
+
+def win_exception(winerror, filename):
+    # see `PyErr_SetExcFromWindowsErrWithFilenameObjects`
+    msg = FormatMessage(winerror).rstrip(
+        "\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f ."
+    )
+    return WindowsError(None, msg, filename, winerror)
 
 
 def send2trash(paths):
@@ -47,7 +61,7 @@ def send2trash(paths):
     # actually try to perform the operation, this section may throw a
     # pywintypes.com_error which does not seem to create as nice of an
     # error as OSError so wrapping with try to convert
-    sink = create_sink()
+    pysink, sink = create_sink()
     try:
         for path in paths:
             item = shell.SHCreateItemFromParsingName(path, None, shell.IID_IShellItem)
@@ -55,12 +69,16 @@ def send2trash(paths):
         result = fileop.PerformOperations()
         aborted = fileop.GetAnyOperationsAborted()
         # if non-zero result or aborted throw an exception
+        assert not pysink.errors, pysink.errors
         if result or aborted:
             raise OSError(None, None, paths, result)
-    except pywintypes.com_error as error:
+    except pywintypes.com_error:
+        assert len(pysink.errors) == 1, pysink.errors
         # convert to standard OS error, allows other code to get a
         # normal errno
-        raise OSError(None, error.strerror, path, error.hresult)
+        path, hr = pysink.errors[0]
+        hr = winerrormap.get(hr + 2**32, hr)
+        raise win_exception(hr, path)
     finally:
         # Need to make sure we call this once fore every init
         pythoncom.CoUninitialize()
