@@ -22,4 +22,4 @@ else:
 try:
     from collections.abc import Iterable as iterable_type
 except ImportError:
-    from collections import Iterable as iterable_type
+    from collections import Iterable as iterable_type  # noqa: F401
