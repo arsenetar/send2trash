@@ -1,6 +1,11 @@
 Changes
 =======
 
+Version 1.8.3 -- 2024/04/06
+---------------------------
+* Add support for any iterable type as input by @PalmtopTiger in https://github.com/arsenetar/send2trash/pull/88
+* fix: Use os.fsdecode() for arguments to shutil.move() by @yogeshiitm in https://github.com/arsenetar/send2trash/pull/90
+
 Version 1.8.2 -- 2023/04/27
 ---------------------------
 * win/legacy: tiny logic simplification by @BoboTiG in https://github.com/arsenetar/send2trash/pull/77
