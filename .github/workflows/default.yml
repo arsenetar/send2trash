@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: LizardByte/setup-python-action@master
+        uses: LizardByte/actions/actions/setup_python@master
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
