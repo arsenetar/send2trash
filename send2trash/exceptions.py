@@ -1,13 +1,7 @@
 import errno
-from send2trash.compat import PY3
-
-if PY3:
-    _permission_error = PermissionError  # noqa: F821
-else:
-    _permission_error = OSError
 
 
-class TrashPermissionError(_permission_error):
+class TrashPermissionError(PermissionError):
     """A permission error specific to a trash directory.
 
     Raising this error indicates that permissions prevent us efficiently
@@ -23,4 +17,4 @@ class TrashPermissionError(_permission_error):
     """
 
     def __init__(self, filename):
-        _permission_error.__init__(self, errno.EACCES, "Permission denied", filename)
+        PermissionError.__init__(self, errno.EACCES, "Permission denied", filename)

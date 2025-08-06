@@ -4,7 +4,6 @@ import codecs
 import os
 import sys
 from os import path as op
-from send2trash.compat import PY3
 from send2trash import TrashPermissionError
 
 try:
@@ -89,7 +88,7 @@ def _filesys_enc():
 
 @pytest.fixture
 def gen_unicode_file():
-    name = u"send2trash_tést1"
+    name = "send2trash_tést1"
     file = op.join(op.expanduser(b"~"), name.encode("utf-8"))
     touch(file)
     assert op.exists(file) is True
@@ -117,10 +116,7 @@ def test_trash_unicode(gen_unicode_file):
 class ExtVol:
     def __init__(self, path):
         self.trash_topdir = path
-        if PY3:
-            self.trash_topdir_b = os.fsencode(self.trash_topdir)
-        else:
-            self.trash_topdir_b = self.trash_topdir
+        self.trash_topdir_b = os.fsencode(self.trash_topdir)
 
         def s_getdev(path):
             from send2trash.plat_other import is_parent

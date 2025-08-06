@@ -5,11 +5,11 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
-from send2trash.compat import text_type, binary_type, iterable_type
+import collections.abc
 
 
 def preprocess_paths(paths):
-    if isinstance(paths, iterable_type) and not isinstance(paths, (text_type, binary_type)):
+    if isinstance(paths, collections.abc.Iterable) and not isinstance(paths, (str, bytes)):
         paths = list(paths)
     elif not isinstance(paths, list):
         paths = [paths]

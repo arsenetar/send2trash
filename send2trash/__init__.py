@@ -8,6 +8,9 @@ import sys
 
 from send2trash.exceptions import TrashPermissionError  # noqa: F401
 
+if sys.version_info[0] < 3:
+    raise RuntimeError("send2trash is only compatible with Python 3 and above (use versions <= 1.8.3 for python 2).")
+
 if sys.platform == "darwin":
     from send2trash.mac import send2trash
 elif sys.platform == "win32":

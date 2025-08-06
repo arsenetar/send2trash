@@ -30,7 +30,6 @@ except ImportError:
     # Python 2
     from urllib import quote
 
-from send2trash.compat import text_type, environb
 from send2trash.util import preprocess_paths
 from send2trash.exceptions import TrashPermissionError
 
@@ -53,21 +52,21 @@ INFO_DIR = b"info"
 INFO_SUFFIX = b".trashinfo"
 
 # Default of ~/.local/share [3]
-XDG_DATA_HOME = op.expanduser(environb.get(b"XDG_DATA_HOME", b"~/.local/share"))
+XDG_DATA_HOME = op.expanduser(os.environb.get(b"XDG_DATA_HOME", b"~/.local/share"))
 HOMETRASH_B = op.join(XDG_DATA_HOME, b"Trash")
 HOMETRASH = fsdecode(HOMETRASH_B)
 
 uid = os.getuid()
 TOPDIR_TRASH = b".Trash"
-TOPDIR_FALLBACK = b".Trash-" + text_type(uid).encode("ascii")
+TOPDIR_FALLBACK = b".Trash-" + str(uid).encode("ascii")
 
 
 def is_parent(parent, path):
     path = op.realpath(path)  # In case it's a symlink
-    if isinstance(path, text_type):
+    if isinstance(path, str):
         path = fsencode(path)
     parent = op.realpath(parent)
-    if isinstance(parent, text_type):
+    if isinstance(parent, str):
         parent = fsencode(parent)
     return path.startswith(parent)
 
@@ -106,7 +105,7 @@ def trash_move(src, dst, topdir=None, cross_dev=False):
     destname = filename
     while op.exists(op.join(filespath, destname)) or op.exists(op.join(infopath, destname + INFO_SUFFIX)):
         counter += 1
-        destname = base_name + b" " + text_type(counter).encode("ascii") + ext
+        destname = base_name + b" " + str(counter).encode("ascii") + ext
 
     check_create(filespath)
     check_create(infopath)
@@ -142,7 +141,7 @@ def find_ext_volume_global_trash(volume_root):
     if not op.isdir(trash_dir) or op.islink(trash_dir) or not (mode & stat.S_ISVTX):
         return None
 
-    trash_dir = op.join(trash_dir, text_type(uid).encode("ascii"))
+    trash_dir = op.join(trash_dir, str(uid).encode("ascii"))
     try:
         check_create(trash_dir)
     except OSError:
@@ -178,7 +177,7 @@ def get_dev(path):
 def send2trash(paths):
     paths = preprocess_paths(paths)
     for path in paths:
-        if isinstance(path, text_type):
+        if isinstance(path, str):
             path_b = fsencode(path)
         elif isinstance(path, bytes):
             path_b = path

@@ -6,7 +6,6 @@
 
 from __future__ import unicode_literals
 import os.path as op
-from send2trash.compat import text_type
 from send2trash.util import preprocess_paths
 from platform import version
 import pythoncom
@@ -20,7 +19,7 @@ def send2trash(paths):
     if not paths:
         return
     # convert data type
-    paths = [text_type(path, "mbcs") if not isinstance(path, text_type) else path for path in paths]
+    paths = [str(path, "mbcs") if not isinstance(path, str) else path for path in paths]
     # convert to full paths
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # remove the leading \\?\ if present

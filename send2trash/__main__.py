@@ -12,6 +12,9 @@ import sys
 from argparse import ArgumentParser
 from send2trash import send2trash
 
+if sys.version_info[0] < 3:
+    raise RuntimeError("send2trash is only compatible with Python 3 and above (use versions <= 1.8.3 for python 2).")
+
 
 def main(args=None):
     parser = ArgumentParser(description="Tool to send files to trash")
