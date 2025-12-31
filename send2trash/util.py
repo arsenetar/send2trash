@@ -12,7 +12,7 @@ import collections.abc
 def preprocess_paths(paths):
     if isinstance(paths, collections.abc.Iterable) and not isinstance(paths, (str, bytes)):
         paths = list(paths)
-    elif not isinstance(paths, list):
+    else:
         paths = [paths]
     # Convert items such as pathlib paths to strings
     return [os.fspath(path) for path in paths]
