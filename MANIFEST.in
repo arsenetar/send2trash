@@ -1,1 +1,1 @@
-include CHANGES.rst LICENSE
+include CHANGES.rst LICENSE tests/conftest.py

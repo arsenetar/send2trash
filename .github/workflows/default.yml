@@ -2,7 +2,11 @@
 
 name: Default CI/CD
 
-on: push
+on: 
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [master]
 
 jobs:
   lint:

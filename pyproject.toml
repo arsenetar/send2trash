@@ -2,5 +2,53 @@
 requires = ["setuptools >= 75.3.1"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "Send2Trash"
+version = "2.0.0"
+description = "Send file to trash natively under Mac OS X, Windows and Linux"
+readme = "README.rst"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Andrew Senetar", email = "arsenetar@voltaicideas.net"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Desktop Environment :: File Managers"
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/arsenetar/send2trash"
+Repository = "https://github.com/arsenetar/send2trash.git"
+Issues = "https://github.com/arsenetar/send2trash/issues"
+
+[project.scripts]
+send2trash = "send2trash.__main__:main"
+
+[project.optional-dependencies]
+test = [
+    "pytest >= 8",
+]
+nativelib = [
+    "pywin32 >= 305; sys_platform == 'win32'",
+    "pyobjc >= 9.0; sys_platform == 'darwin'",
+]
+
 [tool.black]
 line-length = 120
+
+[tool.isort]
+profile = "black"
