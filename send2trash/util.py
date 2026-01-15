@@ -1,4 +1,3 @@
-# encoding: utf-8
 # Copyright 2017 Virgil Dupras
 
 # This software is licensed under the "BSD" License as described in the "LICENSE" file,

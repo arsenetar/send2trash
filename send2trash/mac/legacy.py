@@ -4,7 +4,6 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
-from __future__ import unicode_literals
 
 from ctypes import cdll, byref, Structure, c_char, c_char_p
 from ctypes.util import find_library

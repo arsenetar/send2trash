@@ -1,4 +1,3 @@
-# encoding: utf-8
 from os import path as op
 import pytest
 

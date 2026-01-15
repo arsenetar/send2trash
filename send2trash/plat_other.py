@@ -14,7 +14,6 @@
 # For external volumes this implementation will raise an exception if it can't
 # find or create the user's trash directory.
 
-from __future__ import unicode_literals
 
 import errno
 import shutil

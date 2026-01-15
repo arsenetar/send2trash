@@ -4,7 +4,6 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
-from __future__ import unicode_literals
 import os.path as op
 from ctypes import (
     windll,

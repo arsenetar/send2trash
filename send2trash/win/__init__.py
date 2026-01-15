@@ -4,7 +4,6 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
-from __future__ import unicode_literals
 from platform import version
 
 # if windows is vista or newer and pywin32 is available use IFileOperation
