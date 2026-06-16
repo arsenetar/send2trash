@@ -46,6 +46,9 @@ def is_parent(parent, path):
     parent = op.realpath(parent)
     if isinstance(parent, str):
         parent = os.fsencode(parent)
+    # Ensure parent ends with a separator to prevent invalid substring matches
+    if not parent.endswith(b"/"):
+        parent += b"/"
     return path.startswith(parent)
 
 
