@@ -16,9 +16,21 @@ if sys.platform == "darwin":
 elif sys.platform == "win32":
     from send2trash.win import send2trash
 else:
+    send2trash = None
     try:
-        # If we can use gio, let's use it
-        from send2trash.plat_gio import send2trash
+        from send2trash.plat_kio import is_available as _kio_is_available
+        from send2trash.plat_kio import send2trash as _send2trash
     except ImportError:
-        # Oh well, let's fallback to our own Freedesktop trash implementation
-        from send2trash.plat_other import send2trash  # noqa: F401
+        _send2trash = None
+    else:
+        if _kio_is_available():
+            send2trash = _send2trash
+
+    if send2trash is None:
+        try:
+            # If we can use gio, let's use it
+            from send2trash.plat_gio import send2trash as _send2trash
+        except ImportError:
+            # Oh well, let's fallback to our own Freedesktop trash implementation
+            from send2trash.plat_other import send2trash as _send2trash  # noqa: F401
+        send2trash = _send2trash
