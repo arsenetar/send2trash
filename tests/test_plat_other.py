@@ -1,4 +1,5 @@
 import codecs
+import errno
 import os
 import sys
 from os import path as op
@@ -52,6 +53,63 @@ def test_multitrash(test_files):
     file_names = [file.name for file in test_files]
     s2t(file_names)
     assert any(op.exists(filename) for filename in file_names) is False
+
+
+@pytest.mark.parametrize("collision", [False, True])
+def test_trash_cross_device_retry(tmp_path, monkeypatch, collision):
+    source = tmp_path / "test.txt"
+    source.write_text("new contents", encoding="utf-8")
+    trash = tmp_path / "Trash"
+    files = trash / "files"
+    info = trash / "info"
+    files.mkdir(parents=True)
+    info.mkdir()
+    if collision:
+        (files / source.name).write_text("existing contents", encoding="utf-8")
+        (info / (source.name + INFO_SUFFIX)).write_text("existing info", encoding="utf-8")
+
+    monkeypatch.setattr(send2trash.plat_other, "HOMETRASH_B", os.fsencode(trash))
+    monkeypatch.setattr(send2trash.plat_other, "XDG_DATA_HOME", os.fsencode(tmp_path))
+    monkeypatch.setattr(send2trash.plat_other, "get_dev", lambda path: 1)
+
+    def cross_device_rename(src, dst):
+        raise OSError(errno.EXDEV, "Invalid cross-device link")
+
+    monkeypatch.setattr(send2trash.plat_other.os, "rename", cross_device_rename)
+    s2t(source)
+
+    dest_name = "test 1.txt" if collision else source.name
+    expected_names = {source.name, dest_name}
+    assert not source.exists()
+    assert {path.name for path in files.iterdir()} == expected_names
+    assert {path.name for path in info.iterdir()} == {name + INFO_SUFFIX for name in expected_names}
+    assert (files / dest_name).read_text(encoding="utf-8") == "new contents"
+    cfg = ConfigParser()
+    cfg.read(info / (dest_name + INFO_SUFFIX))
+    assert cfg.get("Trash Info", "Path", raw=True) == source.name
+    if collision:
+        assert (files / source.name).read_text(encoding="utf-8") == "existing contents"
+        assert (info / (source.name + INFO_SUFFIX)).read_text(encoding="utf-8") == "existing info"
+
+
+@pytest.mark.parametrize("error_number", [errno.EXDEV, errno.EACCES])
+def test_trash_move_rename_failure(tmp_path, monkeypatch, error_number):
+    source = tmp_path / "test.txt"
+    source.write_text("contents", encoding="utf-8")
+    trash = tmp_path / "Trash"
+    error = OSError(error_number, "rename failed")
+
+    def failed_rename(src, dst):
+        raise error
+
+    monkeypatch.setattr(send2trash.plat_other.os, "rename", failed_rename)
+    with pytest.raises(OSError) as raised:
+        send2trash.plat_other.trash_move(os.fsencode(source), os.fsencode(trash))
+
+    assert raised.value is error
+    assert source.read_text(encoding="utf-8") == "contents"
+    assert list((trash / "files").iterdir()) == []
+    assert list((trash / "info").iterdir()) == []
 
 
 def touch(path):
