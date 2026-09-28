@@ -8,7 +8,9 @@ import os.path as op
 from platform import version
 import pythoncom
 import pywintypes
+import winerror
 from win32com.shell import shell, shellcon
+from send2trash.exceptions import TrashPermissionError
 from send2trash.util import preprocess_paths
 from send2trash.win.IFileOperationProgressSink import create_sink
 
@@ -56,6 +58,9 @@ def send2trash(paths):
         if result or aborted:
             raise OSError(None, None, paths, result)
     except pywintypes.com_error as error:
+        if error.hresult == winerror.E_ABORT:
+            # the progress sink stopped Windows from deleting items it would not recycle
+            raise TrashPermissionError(paths[0] if len(paths) == 1 else paths) from error
         # convert to standard OS error, allows other code to get a
         # normal errno
         raise OSError(None, error.strerror, path, error.hresult) from error

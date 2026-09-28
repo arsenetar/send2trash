@@ -2,7 +2,9 @@
 # some basic info
 
 import pythoncom
+import winerror
 from win32com.shell import shell, shellcon
+from win32com.server.exception import COMException
 from win32com.server.policy import DesignatedWrapPolicy
 
 
@@ -32,10 +34,11 @@ class FileOperationProgressSink(DesignatedWrapPolicy):
         self.newItem = None
 
     def PreDeleteItem(self, flags, item):
-        # Can detect cases where to stop via flags and condition below, however the operation
-        # does not actual stop, we can resort to raising an exception as that does stop things
-        # but that may need some additional considerations before implementing.
-        return 0 if flags & shellcon.TSF_DELETE_RECYCLE_IF_POSSIBLE else 0x80004005  # S_OK, or E_FAIL
+        # Windows decides up front whether the item can go to the Recycle Bin. When it can't (network
+        # drive, path of MAX_PATH characters or more, ...) it is deleted permanently instead, so abort.
+        # pywin32 ignores the return value of this method, only raising stops the operation.
+        if not flags & shellcon.TSF_DELETE_RECYCLE_IF_POSSIBLE:
+            raise COMException(hresult=winerror.E_ABORT)
 
     def PostDeleteItem(self, flags, item, hr_delete, newly_created):
         if newly_created:
