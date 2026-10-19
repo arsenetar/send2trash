@@ -4,6 +4,7 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
+import os
 import os.path as op
 from ctypes import (
     windll,
@@ -17,6 +18,7 @@ from ctypes import (
 )
 from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
 
+from send2trash.exceptions import TrashPermissionError
 from send2trash.util import preprocess_paths
 
 kernel32 = windll.kernel32
@@ -135,6 +137,26 @@ def get_short_path_name(long_name):
     return get_awaited_path_from_prefix(prefix, output.value)
 
 
+MAX_PATH = 260
+
+
+def too_long_to_recycle(path):
+    """Return the first path at or under *path* that is MAX_PATH characters or longer, or None.
+
+    SHFileOperationW deletes such a tree permanently instead of moving it to the Recycle Bin,
+    and still reports success, even when the top-level path has been shortened to 8.3 names.
+    """
+    prefix, long_path = prefix_and_path(path)
+    if len(path) >= MAX_PATH:
+        return path
+    for root, dirs, files in os.walk(long_path):
+        for name in dirs + files:
+            full = get_awaited_path_from_prefix(prefix, op.join(root, name))
+            if len(full) >= MAX_PATH:
+                return full
+    return None
+
+
 def send2trash(paths):
     paths = preprocess_paths(paths)
     if not paths:
@@ -144,6 +166,11 @@ def send2trash(paths):
     original_paths = paths
     # convert to full paths
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
+    # SHFileOperationW offers no way to stop it from deleting permanently what it cannot recycle,
+    # so refuse a path it would treat that way before calling it (see #28).
+    for path in paths:
+        if too_long_to_recycle(path) is not None:
+            raise TrashPermissionError(path)
     # get short path to handle path length issues
     paths = [get_short_path_name(path) for path in paths]
     fileop = SHFILEOPSTRUCTW()

@@ -4,6 +4,7 @@ import sys
 from os import path as op
 import pytest
 from send2trash import send2trash as s2t
+from send2trash.exceptions import TrashPermissionError
 
 s2t_modern = None
 s2t_legacy = None
@@ -199,12 +200,22 @@ def test_multi_byte_unicode_legacy(test_dir):
     _multi_byte_unicode(test_dir, s2t_legacy)
 
 
+# SHFileOperationW deletes a path of MAX_PATH characters or more permanently instead of recycling it,
+# so the legacy backend refuses it and leaves it in place.
 def test_trash_long_file_legacy(long_file):
-    _trash_file(long_file, s2t_legacy)
+    pytest.raises(TrashPermissionError, s2t_legacy, long_file)
+    assert op.exists(long_file) is True
 
 
 def test_trash_long_multifile_legacy(long_files):
-    _trash_multifile(long_files, s2t_legacy)
+    pytest.raises(TrashPermissionError, s2t_legacy, long_files)
+    assert all(op.exists(file) for file in long_files) is True
+
+
+def test_trash_folder_holding_long_path_legacy(long_file, tmp_path):
+    folder = op.join(str(tmp_path), "A" * 100)
+    pytest.raises(TrashPermissionError, s2t_legacy, folder)
+    assert op.exists(long_file) is True
 
 
 def test_trash_nothing_legacy():
