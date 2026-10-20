@@ -65,6 +65,23 @@ create a ``.Trash-$UID`` directory.
 
 For any other problem, ``OSError`` is raised.
 
+Command-line usage
+------------------
+
+Use ``send2trash`` or ``python -m send2trash`` to trash files from the command line::
+
+    send2trash --verbose file1 file2
+
+By default, the command stops at the first error. To attempt the remaining files
+after an error, use ``--continue-on-error``::
+
+    send2trash --continue-on-error --verbose file1 file2
+
+Errors are written to standard error. The command exits with status 1 if any
+file could not be trashed, even when ``--continue-on-error`` is used. Verbose
+output lists only successfully trashed files. This option does not change the
+Python API.
+
 .. _PyGObject: https://wiki.gnome.org/PyGObject
 .. _GIO: https://developer.gnome.org/gio/
 .. _trash specifications from freedesktop.org: http://freedesktop.org/wiki/Specifications/trash-spec/
