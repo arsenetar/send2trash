@@ -15,6 +15,7 @@ else:
     # import the two versions as well as the "automatic" version
     from send2trash.win.modern import send2trash as s2t_modern
     from send2trash.win.legacy import send2trash as s2t_legacy
+    from send2trash.win.legacy import too_long_to_recycle, utf16_len
 
 if s2t_modern is None:
     pytest.fail("Modern send2trash not available")
@@ -200,7 +201,7 @@ def test_multi_byte_unicode_legacy(test_dir):
     _multi_byte_unicode(test_dir, s2t_legacy)
 
 
-# SHFileOperationW deletes a path of MAX_PATH characters or more permanently instead of recycling it,
+# SHFileOperationW deletes a path of MAX_PATH UTF-16 code units or more permanently instead of recycling it,
 # so the legacy backend refuses it and leaves it in place.
 def test_trash_long_file_legacy(long_file):
     pytest.raises(TrashPermissionError, s2t_legacy, long_file)
@@ -216,6 +217,36 @@ def test_trash_folder_holding_long_path_legacy(long_file, tmp_path):
     folder = op.join(str(tmp_path), "A" * 100)
     pytest.raises(TrashPermissionError, s2t_legacy, folder)
     assert op.exists(long_file) is True
+
+
+def _emoji_child(tmp_path, units):
+    # Each 😇 is one character to len() but two UTF-16 code units to MAX_PATH.
+    folder = op.join(str(tmp_path), "emoji")
+    stem = op.join(folder, "A" * 100, "")
+    room = units - utf16_len(stem) - len(".txt")
+    child = stem + "😇" * (room // 2) + "B" * (room % 2) + ".txt"
+    _create_tree("\\\\?\\" + child)
+    assert utf16_len(child) == units
+    return folder, child
+
+
+def test_trash_folder_holding_long_utf16_path_legacy(tmp_path):
+    folder, child = _emoji_child(tmp_path, 260)
+    assert len(child) < 260
+    pytest.raises(TrashPermissionError, s2t_legacy, folder)
+    assert op.exists("\\\\?\\" + child) is True
+
+
+def test_utf16_path_below_max_path_not_refused_legacy(tmp_path):
+    folder, _ = _emoji_child(tmp_path, 259)
+    assert too_long_to_recycle(folder) is None
+
+
+# The \\?\ prefix never reaches SHFileOperationW, so it must not count towards MAX_PATH.
+def test_long_path_prefix_not_counted_legacy(tmp_path):
+    file = op.join(str(tmp_path), "A" * (258 - utf16_len(str(tmp_path)) - 1))
+    _create_tree("\\\\?\\" + file)
+    assert too_long_to_recycle("\\\\?\\" + file) is None
 
 
 def test_trash_nothing_legacy():

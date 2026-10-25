@@ -140,19 +140,28 @@ def get_short_path_name(long_name):
 MAX_PATH = 260
 
 
+def utf16_len(path):
+    # MAX_PATH counts UTF-16 code units, so a character outside the BMP takes two.
+    # surrogatepass: a Windows file name may hold an unpaired surrogate.
+    return len(path.encode("utf-16-le", "surrogatepass")) // 2
+
+
 def too_long_to_recycle(path):
-    """Return the first path at or under *path* that is MAX_PATH characters or longer, or None.
+    """Return the first path at or under *path* that is MAX_PATH UTF-16 code units or longer, or None.
 
     SHFileOperationW deletes such a tree permanently instead of moving it to the Recycle Bin,
-    and still reports success, even when the top-level path has been shortened to 8.3 names.
+    and still reports success. Passing the top-level path as its 8.3 short name (the DOS-style
+    alias such as PROGRA~1, see get_short_path_name) does not prevent it, because the shell
+    still measures the long names.
     """
     prefix, long_path = prefix_and_path(path)
-    if len(path) >= MAX_PATH:
-        return path
+    top = get_awaited_path_from_prefix(prefix, long_path)
+    if utf16_len(top) >= MAX_PATH:
+        return top
     for root, dirs, files in os.walk(long_path):
         for name in dirs + files:
             full = get_awaited_path_from_prefix(prefix, op.join(root, name))
-            if len(full) >= MAX_PATH:
+            if utf16_len(full) >= MAX_PATH:
                 return full
     return None
 
