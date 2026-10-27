@@ -141,6 +141,7 @@ def send2trash(paths):
         return
     # convert data type
     paths = [str(path, "mbcs") if not isinstance(path, str) else path for path in paths]
+    original_paths = paths
     # convert to full paths
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # get short path to handle path length issues
@@ -177,4 +178,6 @@ def send2trash(paths):
     result = SHFileOperationW(byref(fileop))
     if result:
         error = convert_sh_file_opt_result(result)
-        raise WindowsError(None, FormatError(error), paths, error)
+        exception = WindowsError(None, FormatError(error), original_paths, error)
+        exception.sh_file_operation_result = result
+        raise exception
