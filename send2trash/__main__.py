@@ -19,6 +19,7 @@ def main(args=None):
     parser.add_argument("-v", "--verbose", action="store_true", help="Print deleted files")
     args = parser.parse_args(args)
 
+    failed = False
     for filename in args.files:
         try:
             send2trash(filename)
@@ -26,7 +27,9 @@ def main(args=None):
                 print("Trashed «" + filename + "»")
         except OSError as e:
             print(str(e), file=sys.stderr)
-            sys.exit(1)
+            failed = True
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
