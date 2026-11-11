@@ -59,10 +59,16 @@ def format_date(date):
 def info_for(src, topdir):
     # ...it MUST not include a ".." directory, and for files not "under" that
     # directory, absolute pathnames must be used. [2]
-    if topdir is None or not is_parent(topdir, src):
+    if topdir is None:
         src = op.abspath(src)
     else:
-        src = op.relpath(src, topdir)
+        # Resolve parent directories without following the entry being trashed.
+        canonical_src = op.abspath(op.join(op.realpath(op.dirname(src)), op.basename(src)))
+        canonical_topdir = op.realpath(topdir)
+        if op.commonpath((canonical_src, canonical_topdir)) == canonical_topdir:
+            src = op.relpath(canonical_src, canonical_topdir)
+        else:
+            src = op.abspath(src)
 
     info = "[Trash Info]\n"
     info += "Path=" + quote(src) + "\n"
@@ -84,7 +90,7 @@ def trash_move(src, dst, topdir=None, cross_dev=False):
 
     counter = 0
     dest_name = file_name
-    while op.exists(op.join(files_path, dest_name)) or op.exists(op.join(info_path, dest_name + INFO_SUFFIX)):
+    while op.lexists(op.join(files_path, dest_name)) or op.lexists(op.join(info_path, dest_name + INFO_SUFFIX)):
         counter += 1
         dest_name = base_name + b" " + str(counter).encode("ascii") + ext
 
@@ -102,7 +108,9 @@ def trash_move(src, dst, topdir=None, cross_dev=False):
 
 def find_mount_point(path):
     # Even if something's wrong, "/" is a mount point, so the loop will exit.
-    # Use realpath in case it's a symlink
+    if op.islink(path):
+        path = op.dirname(path)
+    # Resolve symlinks in parent directories.
     path = op.realpath(path)  # Required to avoid infinite loop
     while not op.ismount(path):  # Note ismount() does not always detect mounts
         path = op.split(path)[0]
@@ -165,11 +173,15 @@ def send2trash(paths):
         else:
             raise TypeError(f"str, bytes or PathLike expected, not {type(path)}")
 
-        if not op.exists(path_b):
+        if not op.lexists(path_b):
             raise OSError(errno.ENOENT, f"File not found: {path}")
         # ...should check whether the user has the necessary permissions to delete
         # it, before starting the trashing operation itself. [2]
-        if not os.access(path_b, os.W_OK):
+        if op.islink(path_b):
+            can_delete = os.access(op.dirname(path_b) or b".", os.W_OK | os.X_OK)
+        else:
+            can_delete = os.access(path_b, os.W_OK)
+        if not can_delete:
             raise OSError(errno.EACCES, f"Permission denied: {path}")
 
         path_dev = get_dev(path_b)
