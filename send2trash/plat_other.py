@@ -175,7 +175,7 @@ def send2trash(paths):
         path_dev = get_dev(path_b)
         # If XDG_DATA_HOME or HOMETRASH do not yet exist we need to stat the
         # home directory, and these paths will be created further on if needed.
-        trash_dev = get_dev(op.expanduser(b"~"))
+        trash_dev = get_dev(op.realpath(op.expanduser(b"~")))
 
         # if the file to be trashed is on the same device as HOMETRASH we
         # want to move it there.
