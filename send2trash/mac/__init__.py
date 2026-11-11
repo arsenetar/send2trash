@@ -8,8 +8,9 @@ from platform import mac_ver
 from sys import version_info
 
 # NOTE: version of pyobjc only supports python >= 3.6 and 10.9+
-macos_ver = tuple(int(part) for part in mac_ver()[0].split("."))
-if version_info >= (3, 6) and macos_ver >= (10, 9):
+macos_ver_str = mac_ver()[0]
+macos_ver = tuple(int(part) for part in macos_ver_str.split(".")) if macos_ver_str else None
+if version_info >= (3, 6) and (macos_ver is None or macos_ver >= (10, 9)):
     try:
         from send2trash.mac.modern import send2trash
     except ImportError:
