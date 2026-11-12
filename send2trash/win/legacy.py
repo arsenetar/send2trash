@@ -4,7 +4,9 @@
 # which should be included with this package. The terms are also available at
 # http://www.hardcoded.net/licenses/bsd_license
 
+import os
 import os.path as op
+import stat
 from ctypes import (
     windll,
     Structure,
@@ -15,8 +17,9 @@ from ctypes import (
     GetLastError,
     FormatError,
 )
-from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
+from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL, BOOLEAN
 
+from send2trash.exceptions import TrashPermissionError
 from send2trash.util import preprocess_paths
 
 kernel32 = windll.kernel32
@@ -24,6 +27,13 @@ GetShortPathNameW = kernel32.GetShortPathNameW
 
 shell32 = windll.shell32
 SHFileOperationW = shell32.SHFileOperationW
+
+# Undocumented, but exported by ntdll since Windows 10 1607; missing before that, where long paths
+# could not be enabled at all.
+RtlAreLongPathsEnabled = getattr(windll.ntdll, "RtlAreLongPathsEnabled", None)
+if RtlAreLongPathsEnabled is not None:
+    RtlAreLongPathsEnabled.restype = BOOLEAN
+    RtlAreLongPathsEnabled.argtypes = []
 
 
 class SHFILEOPSTRUCTW(Structure):
@@ -135,6 +145,59 @@ def get_short_path_name(long_name):
     return get_awaited_path_from_prefix(prefix, output.value)
 
 
+MAX_PATH = 260
+
+
+def utf16_len(path):
+    # MAX_PATH counts UTF-16 code units, so a character outside the BMP takes two.
+    # surrogatepass: a Windows file name may hold an unpaired surrogate.
+    return len(path.encode("utf-16-le", "surrogatepass")) // 2
+
+
+def long_paths_enabled():
+    """Return whether this process is long-path aware.
+
+    That takes both LongPathsEnabled=1 in the registry and a longPathAware manifest on the
+    executable, and only then does SHFileOperationW delete a path of MAX_PATH or more permanently;
+    otherwise it recycles such a path.
+    """
+    return RtlAreLongPathsEnabled is not None and bool(RtlAreLongPathsEnabled())
+
+
+def is_link(path):
+    # os.walk skips symlinks but walks into junctions. Other reparse points, such as OneDrive
+    # placeholders, are real folders, and skipping one could hide a long path inside it.
+    try:
+        tag = os.lstat(path).st_reparse_tag
+    except OSError:
+        return False
+    return tag in (stat.IO_REPARSE_TAG_MOUNT_POINT, stat.IO_REPARSE_TAG_SYMLINK)
+
+
+def too_long_to_recycle(path):
+    """Return the first path at or under *path* that is MAX_PATH UTF-16 code units or longer, or None.
+
+    In a long-path aware process (see long_paths_enabled) SHFileOperationW deletes such a tree
+    permanently instead of moving it to the Recycle Bin, and still reports success. Passing the
+    top-level path as its 8.3 short name (the DOS-style alias such as PROGRA~1, see
+    get_short_path_name) does not prevent it, because the shell still measures the long names.
+    A junction or directory symlink is recycled as a link, so the paths behind it are not measured.
+    """
+    prefix, long_path = prefix_and_path(path)
+    top = get_awaited_path_from_prefix(prefix, long_path)
+    if utf16_len(top) >= MAX_PATH:
+        return top
+    if is_link(long_path):
+        return None
+    for root, dirs, files in os.walk(long_path):
+        for name in dirs + files:
+            full = get_awaited_path_from_prefix(prefix, op.join(root, name))
+            if utf16_len(full) >= MAX_PATH:
+                return full
+        dirs[:] = [name for name in dirs if not is_link(op.join(root, name))]
+    return None
+
+
 def send2trash(paths):
     paths = preprocess_paths(paths)
     if not paths:
@@ -144,6 +207,12 @@ def send2trash(paths):
     original_paths = paths
     # convert to full paths
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
+    # SHFileOperationW offers no way to stop it from deleting permanently what it cannot recycle,
+    # so refuse a path it would treat that way before calling it (see #28).
+    if long_paths_enabled():
+        for path in paths:
+            if too_long_to_recycle(path) is not None:
+                raise TrashPermissionError(path)
     # get short path to handle path length issues
     paths = [get_short_path_name(path) for path in paths]
     fileop = SHFILEOPSTRUCTW()
