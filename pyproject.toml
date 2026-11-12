@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Send2Trash"
-version = "2.1.0"
+version = "2.2.0"
 description = "Send file to trash natively under Mac OS X, Windows and Linux"
 readme = "README.rst"
 license = "BSD-3-Clause"

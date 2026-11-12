@@ -1,5 +1,13 @@
 Changes
 =======
+Version 2.2.0 -- 2026/11/11
+---------------------------
+* Resolve path validation flaw (https://github.com/arsenetar/send2trash/security/advisories/GHSA-fgv9-r74r-hqmx) in 522bafe
+* python2 removal: more clean up by @caspian-yez in https://github.com/arsenetar/send2trash/pull/107
+* Handle unavailable macOS version during backend selection by @Neallin-917 in https://github.com/arsenetar/send2trash/pull/114
+* Improve legacy Windows error diagnostics by @dajiaohuang in https://github.com/arsenetar/send2trash/pull/120
+* Resolve symlink homes when choosing the trash device by @ac1982 in https://github.com/arsenetar/send2trash/pull/117
+
 Version 2.1.0 -- 2026/01/14
 ---------------------------
 * Add `conftest.py` to source distribution by @mgorny in https://github.com/arsenetar/send2trash/pull/106
