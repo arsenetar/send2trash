@@ -16,7 +16,7 @@ from ctypes import (
     GetLastError,
     FormatError,
 )
-from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
+from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL, BOOLEAN
 
 from send2trash.exceptions import TrashPermissionError
 from send2trash.util import preprocess_paths
@@ -26,6 +26,13 @@ GetShortPathNameW = kernel32.GetShortPathNameW
 
 shell32 = windll.shell32
 SHFileOperationW = shell32.SHFileOperationW
+
+# Undocumented, but exported by ntdll since Windows 10 1607; missing before that, where long paths
+# could not be enabled at all.
+RtlAreLongPathsEnabled = getattr(windll.ntdll, "RtlAreLongPathsEnabled", None)
+if RtlAreLongPathsEnabled is not None:
+    RtlAreLongPathsEnabled.restype = BOOLEAN
+    RtlAreLongPathsEnabled.argtypes = []
 
 
 class SHFILEOPSTRUCTW(Structure):
@@ -146,6 +153,16 @@ def utf16_len(path):
     return len(path.encode("utf-16-le", "surrogatepass")) // 2
 
 
+def long_paths_enabled():
+    """Return whether this process is long-path aware.
+
+    That takes both LongPathsEnabled=1 in the registry and a longPathAware manifest on the
+    executable, and only then does SHFileOperationW delete a path of MAX_PATH or more permanently;
+    otherwise it recycles such a path.
+    """
+    return RtlAreLongPathsEnabled is not None and bool(RtlAreLongPathsEnabled())
+
+
 def too_long_to_recycle(path):
     """Return the first path at or under *path* that is MAX_PATH UTF-16 code units or longer, or None.
 
@@ -177,9 +194,10 @@ def send2trash(paths):
     paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
     # SHFileOperationW offers no way to stop it from deleting permanently what it cannot recycle,
     # so refuse a path it would treat that way before calling it (see #28).
-    for path in paths:
-        if too_long_to_recycle(path) is not None:
-            raise TrashPermissionError(path)
+    if long_paths_enabled():
+        for path in paths:
+            if too_long_to_recycle(path) is not None:
+                raise TrashPermissionError(path)
     # get short path to handle path length issues
     paths = [get_short_path_name(path) for path in paths]
     fileop = SHFILEOPSTRUCTW()

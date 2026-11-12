@@ -14,6 +14,7 @@ if sys.platform != "win32":
 else:
     # import the two versions as well as the "automatic" version
     from send2trash.win.modern import send2trash as s2t_modern
+    from send2trash.win import legacy
     from send2trash.win.legacy import send2trash as s2t_legacy
     from send2trash.win.legacy import too_long_to_recycle, utf16_len
 
@@ -201,19 +202,38 @@ def test_multi_byte_unicode_legacy(test_dir):
     _multi_byte_unicode(test_dir, s2t_legacy)
 
 
-# SHFileOperationW deletes a path of MAX_PATH UTF-16 code units or more permanently instead of recycling it,
-# so the legacy backend refuses it and leaves it in place.
-def test_trash_long_file_legacy(long_file):
+@pytest.fixture
+def long_paths_on(monkeypatch):
+    monkeypatch.setattr(legacy, "long_paths_enabled", lambda: True)
+
+
+@pytest.fixture
+def long_paths_off(monkeypatch):
+    monkeypatch.setattr(legacy, "long_paths_enabled", lambda: False)
+
+
+# A long-path aware process makes SHFileOperationW delete a path of MAX_PATH UTF-16 code units or more
+# permanently instead of recycling it, so the legacy backend refuses it and leaves it in place.
+def test_trash_long_file_legacy(long_file, long_paths_on):
     pytest.raises(TrashPermissionError, s2t_legacy, long_file)
     assert op.exists(long_file) is True
 
 
-def test_trash_long_multifile_legacy(long_files):
+def test_trash_long_multifile_legacy(long_files, long_paths_on):
     pytest.raises(TrashPermissionError, s2t_legacy, long_files)
     assert all(op.exists(file) for file in long_files) is True
 
 
-def test_trash_folder_holding_long_path_legacy(long_file, tmp_path):
+# Without long-path awareness SHFileOperationW recycles these paths, so nothing is refused.
+def test_trash_long_file_long_paths_off_legacy(long_file, long_paths_off):
+    _trash_file(long_file, s2t_legacy)
+
+
+def test_trash_long_multifile_long_paths_off_legacy(long_files, long_paths_off):
+    _trash_multifile(long_files, s2t_legacy)
+
+
+def test_trash_folder_holding_long_path_legacy(long_file, tmp_path, long_paths_on):
     folder = op.join(str(tmp_path), "A" * 100)
     pytest.raises(TrashPermissionError, s2t_legacy, folder)
     assert op.exists(long_file) is True
@@ -230,7 +250,7 @@ def _emoji_child(tmp_path, units):
     return folder, child
 
 
-def test_trash_folder_holding_long_utf16_path_legacy(tmp_path):
+def test_trash_folder_holding_long_utf16_path_legacy(tmp_path, long_paths_on):
     folder, child = _emoji_child(tmp_path, 260)
     assert len(child) < 260
     pytest.raises(TrashPermissionError, s2t_legacy, folder)
