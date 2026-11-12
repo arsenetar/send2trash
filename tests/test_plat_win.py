@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import sys
 from os import path as op
 import pytest
@@ -14,9 +15,8 @@ if sys.platform != "win32":
 else:
     # import the two versions as well as the "automatic" version
     from send2trash.win.modern import send2trash as s2t_modern
-    from send2trash.win import legacy
     from send2trash.win.legacy import send2trash as s2t_legacy
-    from send2trash.win.legacy import too_long_to_recycle, utf16_len
+    from send2trash.win.legacy import long_paths_enabled, too_long_to_recycle, utf16_len
 
 if s2t_modern is None:
     pytest.fail("Modern send2trash not available")
@@ -202,38 +202,49 @@ def test_multi_byte_unicode_legacy(test_dir):
     _multi_byte_unicode(test_dir, s2t_legacy)
 
 
-@pytest.fixture
-def long_paths_on(monkeypatch):
-    monkeypatch.setattr(legacy, "long_paths_enabled", lambda: True)
+@pytest.fixture(name="long_paths_on")
+def fixture_long_paths_on(monkeypatch):
+    monkeypatch.setattr("send2trash.win.legacy.long_paths_enabled", lambda: True)
 
 
-@pytest.fixture
-def long_paths_off(monkeypatch):
-    monkeypatch.setattr(legacy, "long_paths_enabled", lambda: False)
+@pytest.fixture(name="long_paths_off")
+def fixture_long_paths_off(monkeypatch):
+    monkeypatch.setattr("send2trash.win.legacy.long_paths_enabled", lambda: False)
+
+
+def test_long_paths_disabled_without_export_legacy(monkeypatch):
+    monkeypatch.setattr("send2trash.win.legacy.RtlAreLongPathsEnabled", None)
+    assert long_paths_enabled() is False
 
 
 # A long-path aware process makes SHFileOperationW delete a path of MAX_PATH UTF-16 code units or more
 # permanently instead of recycling it, so the legacy backend refuses it and leaves it in place.
-def test_trash_long_file_legacy(long_file, long_paths_on):
+@pytest.mark.usefixtures("long_paths_on")
+def test_trash_long_file_legacy(long_file):
     pytest.raises(TrashPermissionError, s2t_legacy, long_file)
     assert op.exists(long_file) is True
 
 
-def test_trash_long_multifile_legacy(long_files, long_paths_on):
+@pytest.mark.usefixtures("long_paths_on")
+def test_trash_long_multifile_legacy(long_files):
     pytest.raises(TrashPermissionError, s2t_legacy, long_files)
     assert all(op.exists(file) for file in long_files) is True
 
 
-# Without long-path awareness SHFileOperationW recycles these paths, so nothing is refused.
-def test_trash_long_file_long_paths_off_legacy(long_file, long_paths_off):
+# Without long-path awareness SHFileOperationW recycles these paths, so nothing is refused. Only the missing
+# refusal is checked: on a machine that is in fact long-path aware the call still deletes them permanently.
+@pytest.mark.usefixtures("long_paths_off")
+def test_trash_long_file_long_paths_off_legacy(long_file):
     _trash_file(long_file, s2t_legacy)
 
 
-def test_trash_long_multifile_long_paths_off_legacy(long_files, long_paths_off):
+@pytest.mark.usefixtures("long_paths_off")
+def test_trash_long_multifile_long_paths_off_legacy(long_files):
     _trash_multifile(long_files, s2t_legacy)
 
 
-def test_trash_folder_holding_long_path_legacy(long_file, tmp_path, long_paths_on):
+@pytest.mark.usefixtures("long_paths_on")
+def test_trash_folder_holding_long_path_legacy(long_file, tmp_path):
     folder = op.join(str(tmp_path), "A" * 100)
     pytest.raises(TrashPermissionError, s2t_legacy, folder)
     assert op.exists(long_file) is True
@@ -250,7 +261,8 @@ def _emoji_child(tmp_path, units):
     return folder, child
 
 
-def test_trash_folder_holding_long_utf16_path_legacy(tmp_path, long_paths_on):
+@pytest.mark.usefixtures("long_paths_on")
+def test_trash_folder_holding_long_utf16_path_legacy(tmp_path):
     folder, child = _emoji_child(tmp_path, 260)
     assert len(child) < 260
     pytest.raises(TrashPermissionError, s2t_legacy, folder)
@@ -267,6 +279,21 @@ def test_long_path_prefix_not_counted_legacy(tmp_path):
     file = op.join(str(tmp_path), "A" * (258 - utf16_len(str(tmp_path)) - 1))
     _create_tree("\\\\?\\" + file)
     assert too_long_to_recycle("\\\\?\\" + file) is None
+
+
+# The shell recycles a junction as a link, so a path that only reaches MAX_PATH through one is not refused.
+def test_junction_not_followed_legacy(tmp_path):
+    target = op.join(str(tmp_path), "target")
+    folder = op.join(str(tmp_path), "folder")
+    junction = op.join(folder, "J" * 40)
+    stem = op.join(target, "A" * 50, "")
+    leaf = stem + "B" * (250 - utf16_len(stem) - len(".txt")) + ".txt"
+    _create_tree(leaf)
+    os.makedirs(folder)
+    subprocess.run(["cmd", "/c", "mklink", "/J", junction, target], check=True, capture_output=True)
+    assert utf16_len(leaf.replace(target, junction)) >= 260
+    assert too_long_to_recycle(folder) is None
+    assert too_long_to_recycle(junction) is None
 
 
 def test_trash_nothing_legacy():

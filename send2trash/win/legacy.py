@@ -6,6 +6,7 @@
 
 import os
 import os.path as op
+import stat
 from ctypes import (
     windll,
     Structure,
@@ -163,23 +164,37 @@ def long_paths_enabled():
     return RtlAreLongPathsEnabled is not None and bool(RtlAreLongPathsEnabled())
 
 
+def is_link(path):
+    # os.walk skips symlinks but walks into junctions. Other reparse points, such as OneDrive
+    # placeholders, are real folders, and skipping one could hide a long path inside it.
+    try:
+        tag = os.lstat(path).st_reparse_tag
+    except OSError:
+        return False
+    return tag in (stat.IO_REPARSE_TAG_MOUNT_POINT, stat.IO_REPARSE_TAG_SYMLINK)
+
+
 def too_long_to_recycle(path):
     """Return the first path at or under *path* that is MAX_PATH UTF-16 code units or longer, or None.
 
-    SHFileOperationW deletes such a tree permanently instead of moving it to the Recycle Bin,
-    and still reports success. Passing the top-level path as its 8.3 short name (the DOS-style
-    alias such as PROGRA~1, see get_short_path_name) does not prevent it, because the shell
-    still measures the long names.
+    In a long-path aware process (see long_paths_enabled) SHFileOperationW deletes such a tree
+    permanently instead of moving it to the Recycle Bin, and still reports success. Passing the
+    top-level path as its 8.3 short name (the DOS-style alias such as PROGRA~1, see
+    get_short_path_name) does not prevent it, because the shell still measures the long names.
+    A junction or directory symlink is recycled as a link, so the paths behind it are not measured.
     """
     prefix, long_path = prefix_and_path(path)
     top = get_awaited_path_from_prefix(prefix, long_path)
     if utf16_len(top) >= MAX_PATH:
         return top
+    if is_link(long_path):
+        return None
     for root, dirs, files in os.walk(long_path):
         for name in dirs + files:
             full = get_awaited_path_from_prefix(prefix, op.join(root, name))
             if utf16_len(full) >= MAX_PATH:
                 return full
+        dirs[:] = [name for name in dirs if not is_link(op.join(root, name))]
     return None
 
 
