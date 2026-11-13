@@ -32,6 +32,7 @@ class FileOperationProgressSink(DesignatedWrapPolicy):
     def __init__(self):
         self._wrap_(self)
         self.newItem = None
+        self.errors = []
 
     def PreDeleteItem(self, flags, item):
         # Windows decides up front whether the item can go to the Recycle Bin. When it can't (network
@@ -43,7 +44,11 @@ class FileOperationProgressSink(DesignatedWrapPolicy):
     def PostDeleteItem(self, flags, item, hr_delete, newly_created):
         if newly_created:
             self.newItem = newly_created.GetDisplayName(shellcon.SHGDN_FORPARSING)
+        # remember which item failed, so that the error can name it
+        if hr_delete < 0:
+            self.errors.append((item.GetDisplayName(shellcon.SHGDN_FORPARSING), hr_delete))
 
 
 def create_sink():
-    return pythoncom.WrapObject(FileOperationProgressSink(), shell.IID_IFileOperationProgressSink)
+    pysink = FileOperationProgressSink()
+    return pysink, pythoncom.WrapObject(pysink, shell.IID_IFileOperationProgressSink)
