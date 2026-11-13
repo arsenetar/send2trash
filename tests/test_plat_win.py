@@ -1,9 +1,11 @@
+import ctypes
 import os
 import shutil
 import sys
 from os import path as op
 import pytest
 from send2trash import send2trash as s2t
+from send2trash.exceptions import TrashPermissionError
 
 s2t_modern = None
 s2t_legacy = None
@@ -57,6 +59,16 @@ def fixture_test_files(test_dir):
     # Note dir will cleanup the files
 
 
+@pytest.fixture(name="unc_file")
+def fixture_unc_file(test_file):
+    # The test file reached through the administrative share, which Windows treats as a network location
+    drive, rest = op.splitdrive(test_file[4:])
+    unc_file = "\\\\localhost\\" + drive[0] + "$" + rest
+    if not op.exists(unc_file):
+        pytest.skip("Administrative share is not accessible")
+    yield unc_file
+
+
 # Long path tests
 @pytest.fixture(name="long_dir")
 def fixture_long_dir(tmp_path):
@@ -103,6 +115,37 @@ def _trash_file(file, fcn):
 def _trash_multifile(files, fcn):
     fcn(files)
     assert any(op.exists(file) for file in files) is False
+
+
+def _long_paths_enabled():
+    # Only long path aware processes have Windows refuse to recycle paths of MAX_PATH (260) characters or
+    # more: LongPathsEnabled must be set and the executable must opt in, as python.exe does
+    try:
+        return bool(ctypes.WINFUNCTYPE(ctypes.c_ubyte)(("RtlAreLongPathsEnabled", ctypes.windll.ntdll))())
+    except AttributeError:  # not exported before Windows 10 1607
+        return False
+
+
+def _trash_not_recyclable(file, fcn):
+    # Windows would delete the file permanently instead of recycling it, so it must be left alone
+    pytest.raises(TrashPermissionError, fcn, file)
+    assert op.exists(file) is True
+
+
+def _trash_not_recyclable_multifile(files, fcn):
+    pytest.raises(TrashPermissionError, fcn, files)
+    assert all(op.exists(file) for file in files) is True
+
+
+def _trash_locked_file(files, fcn):
+    # The first file is held open without delete sharing, so trashing fails on it: the error must say so and
+    # name it rather than the last file
+    with open(files[0], "a", encoding="utf-8"):
+        with pytest.raises(PermissionError) as error:
+            fcn(files)
+    assert not isinstance(error.value, TrashPermissionError)
+    assert op.basename(error.value.filename) == op.basename(files[0])
+    assert all(op.exists(file) for file in files) is True
 
 
 def _file_not_found(folder, fcn):
@@ -160,16 +203,34 @@ def test_multi_byte_unicode_modern(test_dir):
     _multi_byte_unicode(test_dir, s2t_modern)
 
 
-# NOTE: both legacy and modern test "pass" on windows, however sometimes with the same path
-# they do not actually recycle files but delete them.  Noticed this when testing with the
-# recycle bin open, noticed later tests actually worked, modern version can actually detect
-# when this happens but not stop it at this moment, and we need a way to verify it when testing.
+# NOTE: in long path aware processes Windows deletes paths of MAX_PATH (260) characters or more
+# permanently instead of recycling them, which the modern version refuses to do. Otherwise they are recycled.
 def test_trash_long_file_modern(long_file):
-    _trash_file(long_file, s2t_modern)
+    if _long_paths_enabled():
+        _trash_not_recyclable(long_file, s2t_modern)
+    else:
+        _trash_file(long_file, s2t_modern)
 
 
 def test_trash_long_multifile_modern(long_files):
-    _trash_multifile(long_files, s2t_modern)
+    if _long_paths_enabled():
+        _trash_not_recyclable_multifile(long_files, s2t_modern)
+    else:
+        _trash_multifile(long_files, s2t_modern)
+
+
+def test_trash_unc_file_modern(unc_file):
+    _trash_not_recyclable(unc_file, s2t_modern)
+
+
+def test_trash_mixed_multifile_modern(test_files, unc_file):
+    # Windows decides whether to recycle for all the files at once, a single network file would otherwise get
+    # the local files deleted permanently too
+    _trash_not_recyclable_multifile(test_files + [unc_file], s2t_modern)
+
+
+def test_trash_locked_file_modern(test_files):
+    _trash_locked_file(test_files, s2t_modern)
 
 
 def test_trash_nothing_modern():

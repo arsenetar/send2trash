@@ -8,9 +8,20 @@ import os.path as op
 from platform import version
 import pythoncom
 import pywintypes
+import winerror
+from win32api import FormatMessage
 from win32com.shell import shell, shellcon
+from send2trash.exceptions import TrashPermissionError
 from send2trash.util import preprocess_paths
 from send2trash.win.IFileOperationProgressSink import create_sink
+
+# copy engine errors that have a standard Windows equivalent, which Python maps to the right OSError subclass
+COPYENGINE_ERRORS = {
+    shellcon.COPYENGINE_E_ACCESS_DENIED_SRC: winerror.ERROR_ACCESS_DENIED,
+    shellcon.COPYENGINE_E_ACCESS_DENIED_DEST: winerror.ERROR_ACCESS_DENIED,
+    shellcon.COPYENGINE_E_SHARING_VIOLATION_SRC: winerror.ERROR_SHARING_VIOLATION,
+    shellcon.COPYENGINE_E_SHARING_VIOLATION_DEST: winerror.ERROR_SHARING_VIOLATION,
+}
 
 
 def send2trash(paths):
@@ -45,7 +56,7 @@ def send2trash(paths):
     # actually try to perform the operation, this section may throw a
     # pywintypes.com_error which does not seem to create as nice of an
     # error as OSError so wrapping with try to convert
-    sink = create_sink()
+    pysink, sink = create_sink()
     try:
         for path in paths:
             item = shell.SHCreateItemFromParsingName(path, None, shell.IID_IShellItem)
@@ -56,6 +67,18 @@ def send2trash(paths):
         if result or aborted:
             raise OSError(None, None, paths, result)
     except pywintypes.com_error as error:
+        if error.hresult == winerror.E_ABORT:
+            # the progress sink stopped Windows from deleting items it would not recycle. Windows decides
+            # that for all the items at once, so the item it refused first is not necessarily at fault
+            raise TrashPermissionError(paths[0] if len(paths) == 1 else paths) from error
+        hresult = error.hresult
+        if pysink.errors:
+            # name the item that failed rather than the last one queued
+            path, hresult = pysink.errors[0]
+        code = COPYENGINE_ERRORS.get(hresult & 0xFFFFFFFF)
+        if code:
+            # trailing period dropped, as Python does for its own Windows errors
+            raise OSError(None, FormatMessage(code).rstrip(" .\r\n"), path, code) from error
         # convert to standard OS error, allows other code to get a
         # normal errno
         raise OSError(None, error.strerror, path, error.hresult) from error
