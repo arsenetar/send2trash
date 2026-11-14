@@ -19,6 +19,7 @@ import errno
 import shutil
 import os
 import os.path as op
+from contextlib import suppress
 from datetime import datetime
 import stat
 from urllib.parse import quote
@@ -91,13 +92,19 @@ def trash_move(src, dst, topdir=None, cross_dev=False):
     check_create(files_path)
     check_create(info_path)
 
-    with open(op.join(info_path, dest_name + INFO_SUFFIX), "w") as f:
+    info_file = op.join(info_path, dest_name + INFO_SUFFIX)
+    with open(info_file, "w") as f:
         f.write(info_for(src, topdir))
     dest_path = op.join(files_path, dest_name)
     if cross_dev:
         shutil.move(os.fsdecode(src), os.fsdecode(dest_path))
     else:
-        os.rename(src, dest_path)
+        try:
+            os.rename(src, dest_path)
+        except OSError:
+            with suppress(OSError):
+                os.unlink(info_file)
+            raise
 
 
 def find_mount_point(path):
