@@ -3,10 +3,11 @@ Send2Trash -- Send files to trash on all platforms
 ==================================================
 
 Send2Trash is a small package that sends files to the Trash (or Recycle Bin) *natively* and on
-*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls or can use pyobjc 
-with NSFileManager. On Windows, it uses native ``IFileOperation`` call if on Vista or newer and 
-pywin32 is installed or falls back to ``SHFileOperation`` calls. On other platforms, if `PyGObject`_ 
-and `GIO`_ are available, it will use this.  Otherwise, it will fallback to its own implementation of 
+*all platforms*. On OS X, it uses native ``FSMoveObjectToTrashSync`` Cocoa calls or can use pyobjc
+with NSFileManager. On Windows, it uses native ``IFileOperation`` call if on Vista or newer and
+pywin32 is installed or falls back to ``SHFileOperation`` calls. On KDE desktops, if ``kioclient``
+is available, it will use the native KIO trash implementation. On other platforms, if `PyGObject`_
+and `GIO`_ are available, it will use this. Otherwise, it will fallback to its own implementation of
 the `trash specifications from freedesktop.org`_.
 
 ``ctypes`` is used to access native libraries, so no compilation is necessary.
@@ -64,6 +65,12 @@ device does not have a ``.Trash`` directory, and we don't have permission to
 create a ``.Trash-$UID`` directory.
 
 For any other problem, ``OSError`` is raised.
+
+On KDE, backend selection and the KIO availability probe run on the first
+``send2trash()`` call. KIO command failures raise ``OSError``; the ``kioclient``
+command does not expose structured error codes that let us reliably distinguish
+trash-directory permission failures from other failures, so these errors are
+not mapped to ``TrashPermissionError``.
 
 .. _PyGObject: https://wiki.gnome.org/PyGObject
 .. _GIO: https://developer.gnome.org/gio/

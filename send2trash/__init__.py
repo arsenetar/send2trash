@@ -5,6 +5,7 @@
 # http://www.hardcoded.net/licenses/bsd_license
 
 import sys
+from functools import lru_cache
 
 from send2trash.exceptions import TrashPermissionError  # noqa: F401
 
@@ -16,9 +17,23 @@ if sys.platform == "darwin":
 elif sys.platform == "win32":
     from send2trash.win import send2trash
 else:
-    try:
-        # If we can use gio, let's use it
-        from send2trash.plat_gio import send2trash
-    except ImportError:
-        # Oh well, let's fallback to our own Freedesktop trash implementation
-        from send2trash.plat_other import send2trash  # noqa: F401
+
+    @lru_cache(maxsize=1)
+    def _get_trash_impl():
+        from send2trash.plat_kio import is_available as _kio_is_available
+        from send2trash.plat_kio import send2trash as _send2trash
+
+        if _kio_is_available():
+            return _send2trash
+
+        try:
+            # If we can use gio, let's use it
+            from send2trash.plat_gio import send2trash as _send2trash
+        except ImportError:
+            # Oh well, let's fallback to our own Freedesktop trash implementation
+            from send2trash.plat_other import send2trash as _send2trash  # noqa: F401
+        return _send2trash
+
+    def send2trash(paths):
+        # Probe KIO only when trashing is first requested, then reuse the backend.
+        return _get_trash_impl()(paths)
