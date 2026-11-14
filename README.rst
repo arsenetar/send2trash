@@ -66,6 +66,12 @@ create a ``.Trash-$UID`` directory.
 
 For any other problem, ``OSError`` is raised.
 
+On KDE, backend selection and the KIO availability probe run on the first
+``send2trash()`` call. KIO command failures raise ``OSError``; the ``kioclient``
+command does not expose structured error codes that let us reliably distinguish
+trash-directory permission failures from other failures, so these errors are
+not mapped to ``TrashPermissionError``.
+
 .. _PyGObject: https://wiki.gnome.org/PyGObject
 .. _GIO: https://developer.gnome.org/gio/
 .. _trash specifications from freedesktop.org: http://freedesktop.org/wiki/Specifications/trash-spec/
