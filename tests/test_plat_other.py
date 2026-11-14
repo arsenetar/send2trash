@@ -112,6 +112,29 @@ def test_trash_move_rename_failure(tmp_path, monkeypatch, error_number):
     assert list((trash / "info").iterdir()) == []
 
 
+def test_trash_move_rename_failure_preserves_error_if_cleanup_fails(tmp_path, monkeypatch):
+    source = tmp_path / "test.txt"
+    source.write_text("contents", encoding="utf-8")
+    trash = tmp_path / "Trash"
+    rename_error = OSError(errno.EACCES, "rename failed")
+    unlinked = []
+
+    def failed_rename(src, dst):
+        raise rename_error
+
+    def failed_unlink(path):
+        unlinked.append(path)
+        raise OSError(errno.EACCES, "unlink failed")
+
+    monkeypatch.setattr(send2trash.plat_other.os, "rename", failed_rename)
+    monkeypatch.setattr(send2trash.plat_other.os, "unlink", failed_unlink)
+    with pytest.raises(OSError) as raised:
+        send2trash.plat_other.trash_move(os.fsencode(source), os.fsencode(trash))
+
+    assert raised.value is rename_error
+    assert unlinked == [os.fsencode(trash / "info" / (source.name + INFO_SUFFIX))]
+
+
 def touch(path):
     with open(path, "a", encoding="utf-8"):
         os.utime(path, None)

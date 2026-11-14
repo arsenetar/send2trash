@@ -19,6 +19,7 @@ import errno
 import shutil
 import os
 import os.path as op
+from contextlib import suppress
 from datetime import datetime
 import stat
 from urllib.parse import quote
@@ -101,7 +102,8 @@ def trash_move(src, dst, topdir=None, cross_dev=False):
         try:
             os.rename(src, dest_path)
         except OSError:
-            os.unlink(info_file)
+            with suppress(OSError):
+                os.unlink(info_file)
             raise
 
 
