@@ -65,6 +65,16 @@ create a ``.Trash-$UID`` directory.
 
 For any other problem, ``OSError`` is raised.
 
+Command line
+------------
+
+You can also send files to the trash from the command line. Use quotes around
+filenames with spaces, and ``--verbose`` to print each filename after it is trashed::
+
+    python -m send2trash --verbose "some file" other_file
+
+Run ``python -m send2trash --help`` to see the available options.
+
 .. _PyGObject: https://wiki.gnome.org/PyGObject
 .. _GIO: https://developer.gnome.org/gio/
 .. _trash specifications from freedesktop.org: http://freedesktop.org/wiki/Specifications/trash-spec/
