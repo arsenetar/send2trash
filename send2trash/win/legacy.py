@@ -142,8 +142,8 @@ def send2trash(paths):
     # convert data type
     paths = [str(path, "mbcs") if not isinstance(path, str) else path for path in paths]
     original_paths = paths
-    # convert to full paths
-    paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
+    # convert to full normalized paths
+    paths = [op.abspath(path) for path in paths]
     # get short path to handle path length issues
     paths = [get_short_path_name(path) for path in paths]
     fileop = SHFILEOPSTRUCTW()
