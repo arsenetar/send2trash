@@ -104,8 +104,11 @@ def find_mount_point(path):
     # Even if something's wrong, "/" is a mount point, so the loop will exit.
     # Use realpath in case it's a symlink
     path = op.realpath(path)  # Required to avoid infinite loop
-    while not op.ismount(path):  # Note ismount() does not always detect mounts
-        path = op.split(path)[0]
+    while not op.isdir(path) or not op.ismount(path):  # Note ismount() does not always detect mounts
+        parent = op.split(path)[0]
+        if parent == path:
+            break
+        path = parent
     return path
 
 
