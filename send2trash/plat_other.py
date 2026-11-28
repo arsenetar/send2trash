@@ -172,7 +172,12 @@ def send2trash(paths):
         if not os.access(path_b, os.W_OK):
             raise OSError(errno.EACCES, f"Permission denied: {path}")
 
-        path_dev = get_dev(path_b)
+        dev_path = (
+            op.realpath(path_b)
+            if op.isdir(path_b) and not op.islink(path_b)
+            else op.realpath(op.dirname(op.abspath(path_b)))
+        )
+        path_dev = get_dev(dev_path)
         # If XDG_DATA_HOME or HOMETRASH do not yet exist we need to stat the
         # home directory, and these paths will be created further on if needed.
         trash_dev = get_dev(op.realpath(op.expanduser(b"~")))
@@ -183,7 +188,7 @@ def send2trash(paths):
             topdir = XDG_DATA_HOME
             dest_trash = HOMETRASH_B
         else:
-            topdir = find_mount_point(path_b)
+            topdir = find_mount_point(dev_path)
             trash_dev = get_dev(topdir)
             if trash_dev != path_dev:
                 raise OSError(f"Couldn't find mount point for {path}")
