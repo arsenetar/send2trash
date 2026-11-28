@@ -19,8 +19,8 @@ def send2trash(paths):
         return
     # convert data type
     paths = [str(path, "mbcs") if not isinstance(path, str) else path for path in paths]
-    # convert to full paths
-    paths = [op.abspath(path) if not op.isabs(path) else path for path in paths]
+    # convert to full normalized paths
+    paths = [op.abspath(path) for path in paths]
     # remove the leading \\?\ if present
     paths = [path[4:] if path.startswith("\\\\?\\") else path for path in paths]
     # Need to initialize the com before using
