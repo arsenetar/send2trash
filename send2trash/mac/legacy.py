@@ -13,8 +13,11 @@ from send2trash.util import preprocess_paths
 Foundation = cdll.LoadLibrary(find_library("Foundation"))
 CoreServices = cdll.LoadLibrary(find_library("CoreServices"))
 
-GetMacOSStatusCommentString = Foundation.GetMacOSStatusCommentString
-GetMacOSStatusCommentString.restype = c_char_p
+GetMacOSStatusCommentString = getattr(Foundation, "GetMacOSStatusCommentString", None)
+if GetMacOSStatusCommentString is None:
+    GetMacOSStatusCommentString = getattr(CoreServices, "GetMacOSStatusCommentString", None)
+if GetMacOSStatusCommentString is not None:
+    GetMacOSStatusCommentString.restype = c_char_p
 FSPathMakeRefWithOptions = CoreServices.FSPathMakeRefWithOptions
 FSMoveObjectToTrashSync = CoreServices.FSMoveObjectToTrashSync
 
@@ -34,7 +37,11 @@ class FSRef(Structure):
 
 def check_op_result(op_result):
     if op_result:
-        msg = GetMacOSStatusCommentString(op_result).decode("utf-8")
+        if GetMacOSStatusCommentString is not None:
+            comment = GetMacOSStatusCommentString(op_result)
+            msg = comment.decode("utf-8") if comment else f"OSStatus error {op_result}"
+        else:
+            msg = f"OSStatus error {op_result}"
         raise OSError(msg)
 
 
